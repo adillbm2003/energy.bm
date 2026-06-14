@@ -34,8 +34,11 @@ export default function Button({
   )
 
   if (to) {
+    const linkProps = { ...props }
+    delete linkProps.target
+    delete linkProps.rel
     return (
-      <Link to={to} className={classes} {...props}>
+      <Link to={to} className={classes} {...linkProps}>
         {children}
       </Link>
     )

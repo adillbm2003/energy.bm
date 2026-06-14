@@ -15,7 +15,8 @@ const MAP_STYLES = {
   streets: {
     label: 'Street map',
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>',
   },
   satellite: {
     label: 'Satellite',
@@ -44,6 +45,30 @@ function getMarkerRadius(capacity) {
   if (capacity >= 20) return 9
   if (capacity >= 5) return 7
   return 6
+}
+
+function ExternalAttributionLinks() {
+  const map = useMap()
+
+  useEffect(() => {
+    const container = map.getContainer()
+
+    const patchLinks = () => {
+      container.querySelectorAll('.leaflet-control-attribution a').forEach((link) => {
+        link.target = '_blank'
+        link.rel = 'noopener noreferrer'
+      })
+    }
+
+    patchLinks()
+    map.on('attributionadd', patchLinks)
+
+    return () => {
+      map.off('attributionadd', patchLinks)
+    }
+  }, [map])
+
+  return null
 }
 
 function FitBounds({ sites }) {
@@ -161,6 +186,7 @@ export default function HeatMap({ installations = [], selectedParish, selectedTy
           zoomControl
         >
           <TileLayer attribution={tiles.attribution} url={tiles.url} />
+          <ExternalAttributionLinks />
           <FitBounds sites={filtered} />
           <MapLayers sites={filtered} activeId={active?.id} onSelect={setActive} />
         </MapContainer>

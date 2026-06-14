@@ -38,7 +38,10 @@ export default function GIS() {
       <PageBanner
         title="Bermuda Renewable Energy Heat Map"
         subtitle="Solar installation locations displayed on a map of Bermuda. Data sourced from Department of Planning records."
-        breadcrumbs={[{ label: 'GIS Heat Map', to: '/gis' }]}
+        breadcrumbs={[
+          { label: 'Data & GIS', to: ROUTES.dashboard },
+          { label: 'GIS Heat Map', to: ROUTES.gis },
+        ]}
         image={PAGE_IMAGES.grid}
       />
 
