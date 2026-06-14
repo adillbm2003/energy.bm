@@ -4,7 +4,7 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const db = require('./db');
+const db = require('./db.cjs');
 
 // Production Dependencies
 const jwt = require('jsonwebtoken');
@@ -175,6 +175,23 @@ const collectionToTable = {
   innovation: 'innovation_topics'
 };
 
+const collectionSortOrder = {
+  kpis: 'name ASC',
+  news: 'publish_date DESC NULLS LAST, id DESC',
+  policies: 'effective_date DESC NULLS LAST, id DESC',
+  consultations: 'start_date DESC NULLS LAST, id DESC',
+  projects: 'id DESC',
+  tracker: 'last_updated DESC NULLS LAST, id DESC',
+  installers: 'id DESC',
+  education: 'id DESC',
+  solarInstallations: 'id DESC',
+  innovation: 'id DESC',
+};
+
+function getCollectionOrderBy(collectionName) {
+  return collectionSortOrder[collectionName] || 'id DESC';
+}
+
 // Database logging helper (runs inside existing transactions when client is passed)
 async function logAction(user, action, contentType, contentName, client = db) {
   try {
@@ -301,7 +318,8 @@ async function runPostgresScheduler() {
 async function getFullDb() {
   const dbData = {};
   for (const [key, tableName] of Object.entries(collectionToTable)) {
-    let queryText = `SELECT * FROM ${tableName}`;
+    const orderBy = getCollectionOrderBy(key);
+    const queryText = `SELECT * FROM ${tableName} ORDER BY ${orderBy}`;
     const res = await db.query(queryText);
     dbData[key] = db.snakeToCamel(res.rows);
   }
@@ -668,7 +686,8 @@ function makeCollectionRoutes(collectionName) {
   app.get(`/api/${collectionName}`, async (req, res, next) => {
     try {
       await runPostgresScheduler();
-      const result = await db.query(`SELECT * FROM ${tableName}`);
+      const orderBy = getCollectionOrderBy(collectionName);
+      const result = await db.query(`SELECT * FROM ${tableName} ORDER BY ${orderBy}`);
       res.json(db.snakeToCamel(result.rows));
     } catch (err) {
       next(err);
@@ -1123,7 +1142,7 @@ app.get(/^\/portal(?:\/.*)?$/, (req, res) => {
 
 // Serve root homepage statically (Admin CMS)
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'cms-admin.html'));
 });
 
 // Direct static file fallback for other root resources

@@ -8,15 +8,16 @@ export const MAIN_NAV = [
     to: ROUTES.energy,
     children: [
       { label: 'Registered Solar Installers', to: ROUTES.installers },
+      { label: 'Vehicles', to: ROUTES.vehicles },
       { label: 'Electronic Communications', to: ROUTES.electronicCommunications },
       { label: 'Space & Satellite', to: ROUTES.spaceSatellite },
     ],
   },
   {
     label: 'Policy',
+    overviewLabel: 'Policies & Publications',
     to: ROUTES.policies,
     children: [
-      { label: 'Policies & Publications', to: ROUTES.policies },
       { label: 'Consultations', to: ROUTES.consultations },
       { label: 'Progress Tracker', to: ROUTES.progressTracker },
     ],

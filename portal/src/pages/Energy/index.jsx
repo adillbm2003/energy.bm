@@ -17,7 +17,7 @@ const RESPONSIBILITIES = [
 const TOPICS = [
   { title: 'Renewable Energy', description: 'Solar PV, battery storage, and community energy programmes.', to: ROUTES.renewableDashboard, image: PAGE_IMAGES.solar },
   { title: 'Energy Efficiency', description: 'Home and business efficiency guides and public sector retrofits.', to: ROUTES.education, image: PAGE_IMAGES.efficiency },
-  { title: 'Electric Vehicles', description: 'EV adoption policy, charging infrastructure, and consumer guides.', to: ROUTES.transitionDashboard, image: PAGE_IMAGES.ev },
+  { title: 'Electric Vehicles', description: 'EV adoption policy, charging infrastructure, and fleet fuel-type data.', to: ROUTES.vehicles, image: PAGE_IMAGES.ev },
   { title: 'Fuels Policy', description: 'National fuels policy and the Fuels Act 2022.', to: ROUTES.policies, image: PAGE_IMAGES.government },
   { title: 'Registered Installers', description: 'List of certified solar PV installers in Bermuda.', to: ROUTES.installers, image: PAGE_IMAGES.solar },
   { title: 'Energy Simulator', description: 'Interactive Bermuda home model with live usage and BELCO bill estimates.', to: ROUTES.simulator, image: PAGE_IMAGES.home },
@@ -92,7 +92,11 @@ export default function Energy() {
           <SectionHeading title="Consumer Energy Guides" subtitle="Resources for homeowners and businesses" />
           <div className="flex flex-wrap gap-2">
             {CONSUMER_GUIDES.map((guide) => (
-              <Link key={guide} to={ROUTES.education} className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 transition-colors hover:border-teal-300 hover:bg-teal-50 hover:text-teal-800">
+              <Link
+                key={guide}
+                to={guide === 'Vehicles' ? ROUTES.vehicles : ROUTES.education}
+                className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 transition-colors hover:border-teal-300 hover:bg-teal-50 hover:text-teal-800"
+              >
                 {guide}
               </Link>
             ))}

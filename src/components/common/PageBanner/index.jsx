@@ -1,7 +1,7 @@
 ﻿import Breadcrumb from '../Breadcrumb'
 import { cn } from '../../../utils/cn'
 
-export default function PageBanner({ title, subtitle, breadcrumbs = [], image, className = '' }) {
+export default function PageBanner({ title, subtitle, breadcrumbs = [], image, className = '', action }) {
   return (
     <section
       className={cn(
@@ -26,11 +26,16 @@ export default function PageBanner({ title, subtitle, breadcrumbs = [], image, c
       )}
 
       <div className="container-page relative py-7 md:py-8">
-        <Breadcrumb items={breadcrumbs} />
-        <h1 className="mt-2 max-w-3xl">{title}</h1>
-        {subtitle && (
-          <p className="mt-2 max-w-2xl text-body-small text-slate-600">{subtitle}</p>
-        )}
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="min-w-0">
+            <Breadcrumb items={breadcrumbs} />
+            <h1 className="mt-2 max-w-3xl">{title}</h1>
+            {subtitle && (
+              <p className="mt-2 max-w-2xl text-body-small text-slate-600">{subtitle}</p>
+            )}
+          </div>
+          {action && <div className="shrink-0 md:pt-6">{action}</div>}
+        </div>
       </div>
     </section>
   )

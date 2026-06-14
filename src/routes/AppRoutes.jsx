@@ -8,6 +8,7 @@ const Home = lazy(() => import('../pages/Home'))
 const About = lazy(() => import('../pages/About'))
 const Energy = lazy(() => import('../pages/Energy'))
 const Installers = lazy(() => import('../pages/Energy/Installers'))
+const Vehicles = lazy(() => import('../pages/Energy/Vehicles'))
 const ElectronicCommunications = lazy(() => import('../pages/ElectronicCommunications'))
 const SpaceSatellite = lazy(() => import('../pages/SpaceSatellite'))
 const SpaceSatellitePage = lazy(() => import('../pages/SpaceSatellite/SpacePage'))
@@ -44,6 +45,7 @@ export default function AppRoutes() {
           <Route path="about" element={<About />} />
           <Route path="energy" element={<Energy />} />
           <Route path="energy/installers" element={<Installers />} />
+          <Route path="energy/vehicles" element={<Vehicles />} />
           <Route path="electronic-communications" element={<ElectronicCommunications />} />
           <Route path="space-satellite" element={<SpaceSatellite />} />
           <Route path="space-satellite/:slug" element={<SpaceSatellitePage />} />

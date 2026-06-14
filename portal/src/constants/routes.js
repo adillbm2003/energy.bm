@@ -3,6 +3,7 @@ export const ROUTES = {
   about: '/about',
   energy: '/energy',
   installers: '/energy/installers',
+  vehicles: '/energy/vehicles',
   electronicCommunications: '/electronic-communications',
   spaceSatellite: '/space-satellite',
   policies: '/policies',

@@ -63,7 +63,7 @@ function NavDropdown({ item, alignRight = false }) {
               role="menuitem"
               onClick={() => setOpen(false)}
             >
-              {item.label}
+              {item.overviewLabel ?? item.label}
             </NavLink>
             {item.children.map((child) => (
               <NavLink

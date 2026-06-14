@@ -1,10 +1,11 @@
 import { consultations } from '../data/consultations'
-import { fetchMock, fetchFromAPI } from './api'
+import { fetchFromAPI } from './api'
+import { sortByNewest } from '../utils/sortContent'
 
 export const consultationService = {
   getAll: async () => {
     const items = await fetchFromAPI('/api/consultations', consultations);
-    return items.map(c => ({
+    return sortByNewest(items.map(c => ({
       id: c.id,
       title: c.title,
       summary: c.description,
@@ -12,7 +13,7 @@ export const consultationService = {
       openingDate: c.startDate,
       closingDate: c.endDate,
       documents: c.supportingDocs ? [{ title: 'Supporting Document', url: c.supportingDocs.startsWith('http') || c.supportingDocs.startsWith('/') ? c.supportingDocs : `/uploads/${c.supportingDocs}`, size: 'PDF' }] : []
-    }));
+    })), ['openingDate']);
   },
   getByStatus: async (status) => {
     const all = await consultationService.getAll();

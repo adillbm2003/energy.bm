@@ -9,7 +9,7 @@
     "build:gh-pages": "vite build --mode gh-pages && node scripts/copy-spa-fallback.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "node server.js"
+    "start": "node server.cjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1067.0",

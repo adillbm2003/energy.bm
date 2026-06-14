@@ -1,12 +1,13 @@
 import { news } from '../data/news'
-import { fetchMock, fetchMockById, fetchFromAPI } from './api'
+import { fetchMockById, fetchFromAPI } from './api'
 import { slugify } from '../utils/format'
+import { sortByNewest } from '../utils/sortContent'
 
 export const newsService = {
   getAll: async () => {
     const items = await fetchFromAPI('/api/news', news);
     const published = items.filter(n => n.status === 'Published');
-    return published.map(n => ({
+    return sortByNewest(published.map(n => ({
       id: n.id,
       title: n.title,
       summary: n.summary,
@@ -16,7 +17,7 @@ export const newsService = {
       slug: slugify(n.title) || n.id,
       category: n.category || 'Renewable Energy',
       featured: n.featured !== false
-    }));
+    })), ['publishDate']);
   },
   getFeatured: async () => {
     const all = await newsService.getAll();

@@ -1,10 +1,11 @@
 import { projects } from '../data/projects'
-import { fetchMock, fetchMockById, fetchFromAPI } from './api'
+import { fetchMockById, fetchFromAPI } from './api'
+import { sortByNewest } from '../utils/sortContent'
 
 export const projectService = {
   getAll: async () => {
     const items = await fetchFromAPI('/api/projects', projects);
-    return items.map(p => {
+    return sortByNewest(items.map(p => {
       const years = (p.timeline || '').split('-');
       const startDate = years[0] ? `${years[0].trim()}-01-01` : '2026-01-01';
       const expectedCompletion = years[1] ? `${years[1].trim()}-12-31` : '2028-12-31';
@@ -27,7 +28,7 @@ export const projectService = {
         documents: [],
         gallery: []
       };
-    });
+    }), ['startDate']);
   },
   getById: async (id) => {
     const all = await projectService.getAll();
