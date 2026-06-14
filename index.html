@@ -288,7 +288,7 @@
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input type="text" id="global-search" placeholder="Search entries..." onkeyup="renderCurrentView()">
+            <input type="text" id="global-search" placeholder="Search entries..." onkeyup="renderCurrentView(event)">
           </div>
         </div>
       </header>
@@ -299,7 +299,7 @@
       <section id="dashboard-view" class="content-view active">
         <!-- Summary Cards Grid -->
         <div class="stats-grid">
-          <div class="stat-card energy">
+          <div class="stat-card energy" onclick="switchView('policies')">
             <div class="icon-wrapper">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -314,7 +314,7 @@
               <span class="stat-label">Total Policies & Acts</span>
             </div>
           </div>
-          <div class="stat-card news">
+          <div class="stat-card news" onclick="switchView('news')">
             <div class="icon-wrapper">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2z">
@@ -326,7 +326,7 @@
               <span class="stat-label">News Releases</span>
             </div>
           </div>
-          <div class="stat-card consultation">
+          <div class="stat-card consultation" onclick="switchView('consultations')">
             <div class="icon-wrapper">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -337,7 +337,7 @@
               <span class="stat-label">Consultation Papers</span>
             </div>
           </div>
-          <div class="stat-card project">
+          <div class="stat-card project" onclick="switchView('projects')">
             <div class="icon-wrapper">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
@@ -406,19 +406,6 @@
                   <path d="M12 5v14M5 12h14"></path>
                 </svg>
                 <span>Add Policy</span>
-              </div>
-              <div class="quick-action-btn" onclick="openProjectForm()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 5v14M5 12h14"></path>
-                </svg>
-                <span>Add Project</span>
-              </div>
-              <div class="quick-action-btn"
-                onclick="switchView('media'); document.getElementById('media-library-uploader').click();">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"></path>
-                </svg>
-                <span>Upload Doc</span>
               </div>
             </div>
             <div style="padding:0 1.5rem 1.5rem 1.5rem; text-align:center;">
@@ -920,8 +907,16 @@
 
       <!-- 17. RECYCLE BIN MODULE -->
       <section id="recycleBin-view" class="content-view">
-        <div class="table-header-bar">
+        <div class="table-header-bar" style="flex-direction: column; align-items: flex-start; gap: 0.75rem; margin-bottom: 1.25rem;">
           <h2>System Recycle Bin (Soft Deleted Contents)</h2>
+          <div style="font-size: 0.85rem; color: #fb7185; background: rgba(251, 113, 133, 0.08); border: 1px solid rgba(251, 113, 133, 0.2); padding: 0.6rem 1rem; border-radius: var(--border-radius-sm); display: flex; align-items: center; gap: 0.5rem; width: 100%; box-sizing: border-box;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; color: #fb7185;">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span><strong>Notice:</strong> Items moved to the recycle bin will be automatically and permanently cleared after 30 days.</span>
+          </div>
         </div>
         <div class="table-container">
           <table class="cms-table" id="recycleBin-table">
