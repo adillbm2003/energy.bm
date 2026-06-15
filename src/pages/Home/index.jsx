@@ -21,12 +21,10 @@ import { EXTERNAL_LINKS } from '../../constants/externalLinks'
 import { homePriorities, homeSpotlights, homeQuickAccess } from '../../data/home'
 import { PAGE_IMAGES } from '../../constants/branding'
 import { formatDate } from '../../utils/format'
-import { downloadMockDocument } from '../../utils/mockDownload'
 import SafeImage from '../../components/common/SafeImage'
 import Badge from '../../components/ui/Badge'
 import { CardSkeleton } from '../../components/ui/Skeleton'
 import EnergyAwarenessGuides from '../../components/home/EnergyAwarenessGuides'
-import { resolveContentImage } from '../../utils/contentImages'
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -225,7 +223,7 @@ export default function Home() {
             <SectionHeading title="Registered Solar Installers" subtitle="Certified professionals for your renewable energy project" className="mb-0" />
             <Button to={ROUTES.installers} variant="outline">View All Installers</Button>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="flex flex-col gap-3">
             {topInstallers.map((installer) => (
               <InstallerCard key={installer.id} installer={installer} />
             ))}
@@ -256,47 +254,38 @@ export default function Home() {
               Government Consultations Forum
             </a>.
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            {activeConsultations.map((con) => (
-              <motion.article key={con.id} {...fadeUp} className="overflow-hidden rounded-xl border border-slate-200 bg-white card-shadow">
-                <div className="aspect-[16/9] overflow-hidden">
-                  <SafeImage
-                    src={resolveContentImage(con.image, 'consultation')}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div className="card-padding">
-                <Badge status="active">Active</Badge>
-                <h3 className="mt-2">{con.title}</h3>
-                <p className="mt-1.5 text-body-small text-slate-600">{con.summary}</p>
-                <p className="mt-3 text-xs text-slate-500">Closes {formatDate(con.closingDate)}</p>
-                {con.documents?.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {con.documents.map((doc) => (
-                      <button
-                        key={doc.title}
-                        type="button"
-                        onClick={() => downloadMockDocument({ title: doc.title, summary: con.summary, category: 'Consultation' })}
-                        className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-teal-700 transition-colors hover:border-teal-300 hover:bg-teal-50"
-                      >
-                        {doc.title}
-                      </button>
-                    ))}
+
+          {activeConsultations.length === 0 ? (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center">
+              <p className="text-sm text-slate-500">No open consultations at this time.</p>
+              <Button to={ROUTES.consultations} variant="outline" size="sm" className="mt-3">View All Consultations</Button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {activeConsultations.map((con) => (
+                <motion.article key={con.id} {...fadeUp} className="flex items-center justify-between gap-4 rounded-xl border border-teal-200 bg-teal-50/50 px-5 py-4 card-shadow">
+                  <div>
+                    <Badge status="active">Open</Badge>
+                    <h3 className="mt-2 text-base font-semibold text-navy-900">{con.title}</h3>
+                    {con.closingDate && <p className="mt-1 text-xs text-slate-500">Closes {formatDate(con.closingDate)}</p>}
                   </div>
-                )}
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <Button href={EXTERNAL_LINKS.consultationsForum} variant="primary" size="sm" target="_blank" rel="noopener noreferrer">
-                    Submit Response
+                  <Button
+                    href={con.externalUrl || EXTERNAL_LINKS.consultationsForum}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="primary"
+                    size="sm"
+                    className="shrink-0"
+                  >
+                    Submit Response →
                   </Button>
-                  <Button to={ROUTES.consultations} variant="outline" size="sm">
-                    View Details
-                  </Button>
-                </div>
-                </div>
-              </motion.article>
-            ))}
-          </div>
+                </motion.article>
+              ))}
+              <div className="mt-2 text-right">
+                <Button to={ROUTES.consultations} variant="outline" size="sm">View All Consultations</Button>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

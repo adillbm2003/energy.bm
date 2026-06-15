@@ -1,3 +1,5 @@
+const base = import.meta.env.BASE_URL || '/';
+
 export const DOCUMENTS = {
-  vehiclesByFuelType: '/documents/Vehicles by Fuel Type.xls',
+  vehiclesByFuelType: base + 'documents/Vehicles by Fuel Type.xls',
 }

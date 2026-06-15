@@ -128,6 +128,20 @@
             </svg>
             Official Consultations
           </a>
+          <a data-view="staticPages">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            Static Page Editor
+          </a>
+          <a data-view="media">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            Media & File Manager
+          </a>
         </div>
 
         <div class="section-title">Department Modules</div>
@@ -154,6 +168,15 @@
             <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path>
           </svg>
           Renewable Dashboard KPIs
+        </a>
+        <a data-view="statistics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+            <path d="M2 20h20"></path>
+          </svg>
+          Statistics Upload (TCD / Solar)
         </a>
         <a data-view="installers">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -498,20 +521,24 @@
       <!-- 4. CONSULTATIONS MODULE -->
       <section id="consultations-view" class="content-view">
         <div class="table-header-bar">
-          <h2>Official Consultation Papers</h2>
+          <h2>Official Consultations</h2>
           <button class="btn btn-primary" onclick="openConsultationForm()">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
-            Create Consultation Form
+            Add Consultation Link
           </button>
         </div>
+        <p style="margin: 0.75rem 0 1rem; color:var(--text-secondary); font-size:0.875rem;">
+          All public consultations are submitted through the Government Citizens Forum. Add a link here to notify the public.
+        </p>
         <div class="table-container">
           <table class="cms-table" id="consultations-table">
             <thead>
               <tr>
                 <th>Consultation Name</th>
+                <th>Citizens Forum Link</th>
                 <th>Open Date</th>
                 <th>Close Date</th>
                 <th>Status</th>
@@ -602,23 +629,25 @@
       <!-- 9. SOLAR INSTALLER DIRECTORY -->
       <section id="installers-view" class="content-view">
         <div class="table-header-bar">
-          <h2>Registered Solar PV Installer Registry</h2>
+          <h2>Registered Solar PV Installer Directory</h2>
           <button class="btn btn-primary" onclick="openInstallerForm()">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
-            Register Installer
+            Add Installer
           </button>
         </div>
+        <p style="margin: 0.75rem 0 1rem; color:var(--text-secondary); font-size:0.875rem;">
+          Only company name and website link are displayed to the public. Maintained by the Department of Energy.
+        </p>
         <div class="table-container">
           <table class="cms-table" id="installers-table">
             <thead>
               <tr>
                 <th>Company Name</th>
-                <th>Contact Information</th>
                 <th>Website URL</th>
-                <th>Registry Status</th>
+                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -940,6 +969,241 @@
         </div>
       </section>
 
+      <!-- MEDIA & FILE MANAGER VIEW -->
+      <section id="media-view" class="content-view">
+        <div class="table-header-bar">
+          <h2>Media &amp; File Manager</h2>
+          <div style="display:flex; gap:0.75rem; align-items:center;">
+            <select id="media-filter-type" class="filter-select" onchange="renderMediaView()">
+              <option value="all">All File Types</option>
+              <option value="image">Images</option>
+              <option value="pdf">PDFs</option>
+              <option value="video">Videos</option>
+            </select>
+            <label class="btn btn-primary" style="cursor:pointer;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Upload File
+              <input type="file" id="media-file-input" style="display:none;" accept=".pdf,.png,.jpg,.jpeg,.gif,.mp4,.webm,.docx,.xlsx" onchange="uploadMediaFile(this)">
+            </label>
+          </div>
+        </div>
+        <p style="margin: 0.75rem 0 1rem; color:var(--text-secondary); font-size:0.875rem;">
+          Upload PDFs, images, and videos. Files with <strong>Pending</strong> status require Approver or Administrator approval before being linked in content.
+        </p>
+
+        <!-- Upload progress indicator -->
+        <div id="media-upload-progress" style="display:none; background:var(--surface-secondary); border:1px solid var(--border-color); border-radius:var(--border-radius-sm); padding:0.75rem 1rem; margin-bottom:1rem; display:none; align-items:center; gap:0.75rem;">
+          <div style="width:100%; background:var(--border-color); border-radius:9999px; height:6px;">
+            <div id="media-progress-bar" style="width:0%; background:var(--accent-teal); height:6px; border-radius:9999px; transition:width 0.3s;"></div>
+          </div>
+          <span id="media-progress-text" style="font-size:0.8rem; color:var(--text-secondary); white-space:nowrap;">Uploading...</span>
+        </div>
+
+        <!-- Media grid -->
+        <div id="media-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:1rem; margin-top:0.5rem;">
+          <!-- Injected by JS -->
+        </div>
+        <p id="media-empty" style="display:none; color:var(--text-secondary); text-align:center; padding:3rem 1rem;">No files uploaded yet. Use the Upload button above to add PDFs, images, or videos.</p>
+      </section>
+
+      <!-- STATIC PAGES EDITOR VIEW -->
+      <section id="staticPages-view" class="content-view">
+        <div class="table-header-bar">
+          <h2>Static Page Editor</h2>
+          <button class="btn btn-primary" onclick="openStaticPageForm()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add Page
+          </button>
+        </div>
+        <p style="margin: 0.75rem 0 1rem; color:var(--text-secondary); font-size:0.875rem;">
+          Edit content for static pages such as About Us, Vision &amp; Mission, Department Overview, and Organisational Information.
+        </p>
+
+        <!-- Page list + inline editor -->
+        <div style="display:grid; grid-template-columns:280px 1fr; gap:1.5rem; align-items:start;">
+          <!-- Page list -->
+          <div class="dashboard-card" style="padding:0; overflow:hidden;">
+            <div style="padding:0.75rem 1rem; border-bottom:1px solid var(--border-color); font-weight:600; font-size:0.875rem; color:var(--text-secondary);">All Pages</div>
+            <ul id="static-pages-list" style="list-style:none; margin:0; padding:0.5rem;">
+              <!-- Injected by JS -->
+            </ul>
+            <p id="static-pages-empty" style="padding:1rem; color:var(--text-secondary); font-size:0.875rem; display:none;">No pages found.</p>
+          </div>
+
+          <!-- Inline editor -->
+          <div class="dashboard-card" id="static-page-editor-panel" style="display:none;">
+            <div class="card-header">
+              <h2 id="static-page-editor-title">Edit Page</h2>
+              <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.3rem 0.75rem;" onclick="closeStaticPageEditor()">Cancel</button>
+            </div>
+            <div style="padding:1.5rem;">
+              <input type="hidden" id="sp-edit-id">
+              <div class="form-group">
+                <label>Page Title</label>
+                <input type="text" id="sp-edit-title" placeholder="e.g. About Us" required>
+              </div>
+              <div class="form-group">
+                <label>URL Route</label>
+                <input type="text" id="sp-edit-route" placeholder="e.g. /about">
+              </div>
+              <div class="form-group">
+                <label>Page Content (HTML or plain text)</label>
+                <textarea id="sp-edit-content" rows="14" style="width:100%; padding:0.625rem 0.875rem; border:1px solid var(--border-color); border-radius:var(--border-radius-sm); font-family:monospace; font-size:0.85rem; resize:vertical; background:var(--surface-secondary); color:var(--text-primary); outline:none;"></textarea>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>SEO Title</label>
+                  <input type="text" id="sp-edit-seo-title" placeholder="Page SEO title">
+                </div>
+                <div class="form-group">
+                  <label>SEO Description</label>
+                  <input type="text" id="sp-edit-seo-desc" placeholder="Meta description">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <select id="sp-edit-status">
+                  <option value="Published">Published</option>
+                  <option value="Draft">Draft</option>
+                </select>
+              </div>
+              <div style="margin-top:1.5rem; display:flex; justify-content:flex-end; gap:0.75rem;">
+                <button type="button" class="btn btn-secondary" onclick="closeStaticPageEditor()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveStaticPage()">Save Page</button>
+              </div>
+            </div>
+          </div>
+          <div id="static-page-placeholder" class="dashboard-card" style="display:flex; align-items:center; justify-content:center; min-height:300px; color:var(--text-secondary); font-size:0.9rem;">
+            Select a page from the list to edit it.
+          </div>
+        </div>
+      </section>
+
+      <!-- STATISTICS UPLOAD VIEW (Monthly TCD / Solar Data) -->
+      <section id="statistics-view" class="content-view">
+        <div class="table-header-bar">
+          <h2>Statistics &amp; Data Files</h2>
+        </div>
+
+        <!-- Tab switcher -->
+        <div style="display:flex; gap:0; border-bottom:2px solid var(--border-color); margin-bottom:1.5rem;">
+          <button id="stat-tab-files" onclick="switchStatTab('files')"
+            style="padding:0.6rem 1.25rem; font-size:0.875rem; font-weight:600; border:none; background:none; cursor:pointer; border-bottom:3px solid var(--accent-cyan); color:var(--accent-cyan); margin-bottom:-2px;">
+            📁 Data File Manager
+          </button>
+          <button id="stat-tab-monthly" onclick="switchStatTab('monthly')"
+            style="padding:0.6rem 1.25rem; font-size:0.875rem; font-weight:600; border:none; background:none; cursor:pointer; border-bottom:3px solid transparent; color:var(--text-secondary); margin-bottom:-2px;">
+            📊 Monthly Statistics
+          </button>
+        </div>
+
+        <!-- DATA FILE MANAGER TAB -->
+        <div id="stat-panel-files">
+          <p style="margin-bottom:1.5rem; color:var(--text-secondary); font-size:0.875rem;">
+            Upload replacement Excel files for the EV Fleet registry and Solar Panel Applications dataset. The website reads from these files in real-time — uploading a new version instantly updates all charts and statistics.
+          </p>
+          <div id="data-files-list" style="display:grid; gap:1.25rem;">
+            <div style="text-align:center; padding:2rem; color:var(--text-secondary);">Loading data files…</div>
+          </div>
+        </div>
+
+        <!-- MONTHLY STATISTICS TAB -->
+        <div id="stat-panel-monthly" style="display:none;">
+        <p style="margin: 0 0 1.5rem; color:var(--text-secondary); font-size:0.875rem;">
+          Upload monthly statistics from the Transport Control Department (EV adoption) and the Department of Planning (solar installations). Historical data is preserved.
+        </p>
+
+        <!-- Entry form + history table side by side -->
+        <div style="display:grid; grid-template-columns:360px 1fr; gap:1.5rem; align-items:start;">
+
+          <!-- Entry form -->
+          <div class="dashboard-card">
+            <div class="card-header"><h2>Add Monthly Entry</h2></div>
+            <div style="padding:1.5rem;">
+              <div class="form-group">
+                <label>Data Type</label>
+                <select id="stat-data-type">
+                  <option value="ev_registrations">EV Registrations (TCD)</option>
+                  <option value="ev_charging_points">EV Charging Points (TCD)</option>
+                  <option value="solar_rooftop_kw">Rooftop Solar — Installed kW (Planning)</option>
+                  <option value="solar_utility_kw">Utility-Scale Solar — Installed kW (Planning)</option>
+                  <option value="solar_installations_count">Solar Installations Count (Planning)</option>
+                  <option value="renewable_penetration_pct">Renewable Penetration % (Grid)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Period (YYYY-MM)</label>
+                <input type="month" id="stat-period">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Value</label>
+                  <input type="number" id="stat-value" step="any" placeholder="e.g. 1250">
+                </div>
+                <div class="form-group">
+                  <label>Unit (optional)</label>
+                  <input type="text" id="stat-unit" placeholder="kW / count / %">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Notes (optional)</label>
+                <textarea id="stat-notes" rows="2" style="width:100%; padding:0.6rem 0.875rem; border:1px solid var(--border-color); border-radius:var(--border-radius-sm); font-family:inherit; font-size:0.875rem; resize:vertical; background:var(--surface-secondary); color:var(--text-primary); outline:none;" placeholder="e.g. Source: TCD monthly spreadsheet"></textarea>
+              </div>
+              <button type="button" class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="submitStatEntry()">Save Entry</button>
+
+              <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border-color);">
+                <div style="font-weight:600; font-size:0.875rem; color:var(--text-secondary); margin-bottom:0.75rem;">Bulk Import (CSV)</div>
+                <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.75rem;">CSV format: <code>dataType,period,value,unit,notes</code></p>
+                <label class="btn btn-secondary" style="cursor:pointer; width:100%; justify-content:center; display:flex; gap:0.5rem;">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  Import CSV
+                  <input type="file" id="stat-csv-input" accept=".csv" style="display:none;" onchange="importStatCSV(this)">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- History table -->
+          <div>
+            <div style="display:flex; align-items:center; justify-content:between; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+              <select id="stat-filter-type" class="filter-select" onchange="renderStatisticsView()">
+                <option value="all">All Data Types</option>
+                <option value="ev_registrations">EV Registrations</option>
+                <option value="ev_charging_points">EV Charging Points</option>
+                <option value="solar_rooftop_kw">Rooftop Solar kW</option>
+                <option value="solar_utility_kw">Utility-Scale Solar kW</option>
+                <option value="solar_installations_count">Solar Installations Count</option>
+                <option value="renewable_penetration_pct">Renewable Penetration %</option>
+              </select>
+              <button class="btn btn-secondary" onclick="exportStatsCSV()" style="font-size:0.85rem;">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Export CSV
+              </button>
+            </div>
+            <div class="table-container">
+              <table class="cms-table" id="statistics-table">
+                <thead>
+                  <tr>
+                    <th>Period</th>
+                    <th>Data Type</th>
+                    <th>Value</th>
+                    <th>Unit</th>
+                    <th>Notes</th>
+                    <th>Uploaded By</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="statistics-table-body">
+                  <!-- Injected by JS -->
+                </tbody>
+              </table>
+              <p id="statistics-empty" style="display:none; color:var(--text-secondary); text-align:center; padding:2rem;">No statistics entries yet.</p>
+            </div>
+          </div>
+        </div>
+        </div><!-- end stat-panel-monthly -->
+      </section>
+
       <!-- 18. GLOBAL SEARCH RESULTS VIEW -->
       <section id="search-view" class="content-view">
         <div class="table-header-bar">
@@ -994,6 +1258,345 @@
 
   <!-- Load Database and Application Scripts -->
   <script src="app.js"></script>
+
+  <!-- ── EXTENDED CMS MODULES ────────────────────────────────────────────── -->
+  <script>
+  // ─── MEDIA MANAGER ───────────────────────────────────────────────────────
+
+  async function renderMediaView() {
+    const grid = document.getElementById('media-grid');
+    const empty = document.getElementById('media-empty');
+    if (!grid) return;
+    try {
+      const res = await fetch('/api/media', { credentials: 'include' });
+      if (!res.ok) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+      let files = await res.json();
+      const filterType = document.getElementById('media-filter-type')?.value || 'all';
+      if (filterType !== 'all') {
+        files = files.filter(f => {
+          if (filterType === 'image') return f.type === 'image' || /\.(png|jpg|jpeg|gif|webp)$/i.test(f.url);
+          if (filterType === 'pdf') return f.type === 'pdf' || /\.pdf$/i.test(f.url);
+          if (filterType === 'video') return f.type === 'video' || /\.(mp4|webm)$/i.test(f.url);
+          return true;
+        });
+      }
+      if (files.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      grid.innerHTML = files.map(f => {
+        const isPdf = f.type === 'pdf' || /\.pdf$/i.test(f.url);
+        const isImage = f.type === 'image' || /\.(png|jpg|jpeg|gif|webp)$/i.test(f.url);
+        const isVideo = f.type === 'video' || /\.(mp4|webm)$/i.test(f.url);
+        const statusBadge = f.status === 'Pending'
+          ? '<span style="background:#fef3c7;color:#92400e;font-size:0.7rem;padding:2px 8px;border-radius:9999px;font-weight:600;">Pending Approval</span>'
+          : '<span style="background:#d1fae5;color:#065f46;font-size:0.7rem;padding:2px 8px;border-radius:9999px;font-weight:600;">Approved</span>';
+        const thumb = isImage
+          ? `<img src="${f.url}" alt="${f.name}" style="width:100%;height:100%;object-fit:cover;">`
+          : isVideo
+            ? `<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#94a3b8" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`
+            : `<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`;
+        return `
+          <div style="border:1px solid var(--border-color);border-radius:var(--border-radius-sm);overflow:hidden;background:var(--surface-secondary);">
+            <div style="height:120px;display:flex;align-items:center;justify-content:center;background:var(--surface-primary);overflow:hidden;">
+              ${thumb}
+            </div>
+            <div style="padding:0.625rem;">
+              <p style="font-size:0.8rem;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${f.name}">${f.name}</p>
+              <p style="font-size:0.72rem;color:var(--text-secondary);margin-top:2px;">${f.size || ''} · ${f.date || ''}</p>
+              <div style="margin-top:0.5rem;">${statusBadge}</div>
+              <div style="display:flex;gap:0.4rem;margin-top:0.625rem;flex-wrap:wrap;">
+                <a href="${f.url}" target="_blank" class="btn btn-secondary" style="font-size:0.75rem;padding:0.3rem 0.625rem;">View</a>
+                <button onclick="copyToClipboard('${f.url}')" class="btn btn-secondary" style="font-size:0.75rem;padding:0.3rem 0.625rem;">Copy URL</button>
+                ${f.status === 'Pending' ? `<button onclick="approveMedia('${f.id}')" class="btn btn-primary" style="font-size:0.75rem;padding:0.3rem 0.625rem;">Approve</button>` : ''}
+                <button onclick="deleteMedia('${f.id}', '${f.name}')" class="btn btn-secondary" style="font-size:0.75rem;padding:0.3rem 0.625rem;color:#ef4444;border-color:#ef4444;">Delete</button>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    } catch (e) {
+      grid.innerHTML = '';
+      empty.textContent = 'Failed to load media files.';
+      empty.style.display = 'block';
+    }
+  }
+
+  async function uploadMediaFile(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const progress = document.getElementById('media-upload-progress');
+    const bar = document.getElementById('media-progress-bar');
+    const label = document.getElementById('media-progress-text');
+    if (progress) { progress.style.display = 'flex'; bar.style.width = '10%'; label.textContent = 'Uploading...'; }
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: fd });
+      if (progress) { bar.style.width = '100%'; }
+      if (!res.ok) {
+        const err = await res.json();
+        alert('Upload failed: ' + (err.error || 'Unknown error'));
+      } else {
+        label.textContent = 'Upload complete!';
+        setTimeout(() => { if (progress) progress.style.display = 'none'; }, 2000);
+        renderMediaView();
+      }
+    } catch (e) {
+      alert('Upload error: ' + e.message);
+    } finally {
+      input.value = '';
+      if (bar) bar.style.width = '0%';
+    }
+  }
+
+  async function approveMedia(id) {
+    try {
+      const res = await fetch(`/api/media/${id}/approve`, { method: 'PUT', credentials: 'include' });
+      if (res.ok) renderMediaView();
+      else alert('Failed to approve media');
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  async function deleteMedia(id, name) {
+    if (!confirm(`Delete file "${name}"? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/media/${id}`, { method: 'DELETE', credentials: 'include' });
+      if (res.ok) renderMediaView();
+      else alert('Failed to delete media file.');
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(window.location.origin + text)
+      .then(() => showToast('URL copied to clipboard'))
+      .catch(() => prompt('Copy this URL:', window.location.origin + text));
+  }
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;background:#1e293b;color:#fff;padding:0.6rem 1.25rem;border-radius:6px;font-size:0.875rem;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2500);
+  }
+
+  // ─── STATIC PAGES EDITOR ─────────────────────────────────────────────────
+
+  let staticPagesData = [];
+
+  async function renderStaticPagesView() {
+    const list = document.getElementById('static-pages-list');
+    const empty = document.getElementById('static-pages-empty');
+    if (!list) return;
+    try {
+      const res = await fetch('/api/staticPages', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to load pages');
+      staticPagesData = await res.json();
+      if (staticPagesData.length === 0) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      list.innerHTML = staticPagesData.map(p => `
+        <li>
+          <button onclick="editStaticPage('${p.id}')" style="display:flex;flex-direction:column;align-items:flex-start;width:100%;padding:0.625rem 0.875rem;border:none;background:none;cursor:pointer;border-radius:var(--border-radius-sm);text-align:left;transition:background 0.15s;">
+            <span style="font-weight:600;font-size:0.875rem;color:var(--text-primary);">${p.title || 'Untitled'}</span>
+            <span style="font-size:0.75rem;color:var(--text-secondary);">${p.route || ''}</span>
+          </button>
+        </li>`).join('');
+    } catch(e) {
+      list.innerHTML = '';
+      empty.textContent = 'Failed to load pages.';
+      empty.style.display = 'block';
+    }
+  }
+
+  function editStaticPage(id) {
+    const page = staticPagesData.find(p => p.id === id);
+    if (!page) return;
+    document.getElementById('sp-edit-id').value = page.id;
+    document.getElementById('sp-edit-title').value = page.title || '';
+    document.getElementById('sp-edit-route').value = page.route || '';
+    document.getElementById('sp-edit-content').value = page.content || '';
+    document.getElementById('sp-edit-seo-title').value = page.seoTitle || '';
+    document.getElementById('sp-edit-seo-desc').value = page.seoDescription || '';
+    document.getElementById('sp-edit-status').value = page.status || 'Published';
+    document.getElementById('static-page-editor-title').textContent = 'Editing: ' + (page.title || 'Page');
+    document.getElementById('static-page-editor-panel').style.display = 'block';
+    document.getElementById('static-page-placeholder').style.display = 'none';
+  }
+
+  function closeStaticPageEditor() {
+    document.getElementById('static-page-editor-panel').style.display = 'none';
+    document.getElementById('static-page-placeholder').style.display = 'flex';
+  }
+
+  async function saveStaticPage() {
+    const id = document.getElementById('sp-edit-id').value;
+    const payload = {
+      title: document.getElementById('sp-edit-title').value,
+      route: document.getElementById('sp-edit-route').value,
+      content: document.getElementById('sp-edit-content').value,
+      seoTitle: document.getElementById('sp-edit-seo-title').value,
+      seoDescription: document.getElementById('sp-edit-seo-desc').value,
+      status: document.getElementById('sp-edit-status').value,
+      lastUpdated: new Date().toISOString().split('T')[0],
+    };
+    try {
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/api/staticPages/${id}` : '/api/staticPages';
+      const res = await fetch(url, { method, credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (!res.ok) { const e = await res.json(); alert('Save failed: ' + (e.error || 'Unknown error')); return; }
+      showToast('Page saved successfully');
+      closeStaticPageEditor();
+      renderStaticPagesView();
+    } catch(e) { alert('Error saving page: ' + e.message); }
+  }
+
+  async function openStaticPageForm() {
+    document.getElementById('sp-edit-id').value = '';
+    document.getElementById('sp-edit-title').value = '';
+    document.getElementById('sp-edit-route').value = '';
+    document.getElementById('sp-edit-content').value = '';
+    document.getElementById('sp-edit-seo-title').value = '';
+    document.getElementById('sp-edit-seo-desc').value = '';
+    document.getElementById('sp-edit-status').value = 'Published';
+    document.getElementById('static-page-editor-title').textContent = 'New Page';
+    document.getElementById('static-page-editor-panel').style.display = 'block';
+    document.getElementById('static-page-placeholder').style.display = 'none';
+  }
+
+  // ─── STATISTICS UPLOAD ────────────────────────────────────────────────────
+
+  let statisticsData = [];
+
+  async function renderStatisticsView() {
+    const tbody = document.getElementById('statistics-table-body');
+    const empty = document.getElementById('statistics-empty');
+    if (!tbody) return;
+    try {
+      const res = await fetch('/api/statistics', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to load statistics');
+      statisticsData = await res.json();
+      const filterType = document.getElementById('stat-filter-type')?.value || 'all';
+      let rows = filterType === 'all' ? statisticsData : statisticsData.filter(s => s.dataType === filterType);
+      if (rows.length === 0) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      const typeLabels = {
+        ev_registrations: 'EV Registrations (TCD)',
+        ev_charging_points: 'EV Charging Points (TCD)',
+        solar_rooftop_kw: 'Rooftop Solar kW (Planning)',
+        solar_utility_kw: 'Utility-Scale Solar kW (Planning)',
+        solar_installations_count: 'Solar Installations Count (Planning)',
+        renewable_penetration_pct: 'Renewable Penetration % (Grid)',
+      };
+      tbody.innerHTML = rows.map(s => `
+        <tr>
+          <td><strong>${s.period || ''}</strong></td>
+          <td>${typeLabels[s.dataType] || s.dataType}</td>
+          <td>${s.value !== null ? Number(s.value).toLocaleString() : '—'}</td>
+          <td>${s.unit || '—'}</td>
+          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${s.notes || ''}">${s.notes || '—'}</td>
+          <td>${s.uploadedBy || '—'}</td>
+          <td><button onclick="deleteStatEntry('${s.id}')" class="btn btn-secondary" style="font-size:0.75rem;padding:0.25rem 0.625rem;color:#ef4444;border-color:#ef4444;">Delete</button></td>
+        </tr>`).join('');
+    } catch(e) {
+      tbody.innerHTML = '';
+      empty.textContent = 'Failed to load statistics data.';
+      empty.style.display = 'block';
+    }
+  }
+
+  async function submitStatEntry() {
+    const dataType = document.getElementById('stat-data-type').value;
+    const period = document.getElementById('stat-period').value;
+    const value = document.getElementById('stat-value').value;
+    const unit = document.getElementById('stat-unit').value;
+    const notes = document.getElementById('stat-notes').value;
+    if (!dataType || !period || value === '') { alert('Data type, period, and value are required.'); return; }
+    try {
+      const res = await fetch('/api/statistics', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dataType, period, value: parseFloat(value), unit, notes })
+      });
+      if (!res.ok) { const e = await res.json(); alert('Error: ' + (e.error || 'Unknown')); return; }
+      showToast('Statistics entry saved');
+      document.getElementById('stat-value').value = '';
+      document.getElementById('stat-notes').value = '';
+      renderStatisticsView();
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  async function deleteStatEntry(id) {
+    if (!confirm('Delete this statistics entry?')) return;
+    try {
+      const res = await fetch(`/api/statistics/${id}`, { method: 'DELETE', credentials: 'include' });
+      if (res.ok) renderStatisticsView();
+      else alert('Failed to delete entry');
+    } catch(e) { alert('Error: ' + e.message); }
+  }
+
+  function importStatCSV(input) {
+    if (!input.files || !input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const text = e.target.result;
+      const lines = text.split('\n').filter(l => l.trim());
+      const entries = [];
+      for (let i = 0; i < lines.length; i++) {
+        const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+        if (cols.length < 3) continue;
+        if (i === 0 && isNaN(parseFloat(cols[2]))) continue; // skip header
+        entries.push({ dataType: cols[0], period: cols[1], value: parseFloat(cols[2]), unit: cols[3] || '', notes: cols[4] || '' });
+      }
+      if (entries.length === 0) { alert('No valid rows found in CSV. Format: dataType,period,value,unit,notes'); return; }
+      try {
+        const res = await fetch('/api/statistics/bulk', {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ entries })
+        });
+        const data = await res.json();
+        if (res.ok) { showToast(`Imported ${data.inserted} entries`); renderStatisticsView(); }
+        else alert('Import failed: ' + (data.error || 'Unknown'));
+      } catch(err) { alert('Import error: ' + err.message); }
+      input.value = '';
+    };
+    reader.readAsText(input.files[0]);
+  }
+
+  function exportStatsCSV() {
+    if (!statisticsData || statisticsData.length === 0) { alert('No data to export.'); return; }
+    const header = 'dataType,period,value,unit,notes,uploadedBy,uploadedAt';
+    const rows = statisticsData.map(s => [s.dataType, s.period, s.value, s.unit || '', s.notes || '', s.uploadedBy || '', s.uploadedAt || ''].join(','));
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `statistics-export-${new Date().toISOString().split('T')[0]}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ─── VIEW SWITCHER HOOK ───────────────────────────────────────────────────
+  // Extend the existing switchView to trigger new section renders
+  document.addEventListener('DOMContentLoaded', () => {
+    const origSwitchView = window.switchView;
+    window.switchView = function(viewName) {
+      if (origSwitchView) origSwitchView(viewName);
+      if (viewName === 'media') setTimeout(renderMediaView, 50);
+      if (viewName === 'staticPages') setTimeout(renderStaticPagesView, 50);
+      if (viewName === 'statistics') setTimeout(renderStatisticsView, 50);
+    };
+
+    // Also hook sidebar nav clicks for new views
+    document.querySelectorAll('[data-view="media"],[data-view="staticPages"],[data-view="statistics"]').forEach(link => {
+      link.addEventListener('click', () => {
+        const v = link.getAttribute('data-view');
+        // Ensure the section is shown (existing switchView handles class toggling)
+        setTimeout(() => {
+          if (v === 'media') renderMediaView();
+          if (v === 'staticPages') renderStaticPagesView();
+          if (v === 'statistics') renderStatisticsView();
+        }, 100);
+      });
+    });
+  });
+  </script>
 </body>
 
 </html>

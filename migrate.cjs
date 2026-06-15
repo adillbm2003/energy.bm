@@ -572,6 +572,37 @@ const migrations = [
       await client.query("ALTER TABLE media DROP COLUMN IF EXISTS approved_at;");
       await client.query("ALTER TABLE media DROP COLUMN IF EXISTS description;");
     }
+  },
+  {
+    version: 5,
+    name: 'create_solar_installations_table',
+    up: async (client) => {
+      console.log("Migration 5: Creating solar_installations table...");
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS solar_installations (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          parish TEXT,
+          type TEXT,
+          capacity NUMERIC,
+          status TEXT DEFAULT 'Active',
+          install_date DATE,
+          installer TEXT,
+          coordinate_x NUMERIC DEFAULT 50,
+          coordinate_y NUMERIC DEFAULT 50,
+          notes TEXT,
+          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+    },
+    down: async (client) => {
+      if (isProduction) {
+        throw new Error("Catastrophic Action Prevented: DROP TABLE is strictly prohibited in production.");
+      }
+      console.log("Migration 5 rollback: Dropping solar_installations table...");
+      await client.query("DROP TABLE IF EXISTS solar_installations CASCADE;");
+    }
   }
 ];
 

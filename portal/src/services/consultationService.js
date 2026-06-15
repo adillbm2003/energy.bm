@@ -8,19 +8,15 @@ export const consultationService = {
     return sortByNewest(items.map(c => ({
       id: c.id,
       title: c.title,
-      summary: c.description,
-      status: c.status === 'Open' ? 'active' : (c.status === 'Closed' ? 'completed' : 'upcoming'),
-      openingDate: c.startDate,
-      closingDate: c.endDate,
-      documents: c.supportingDocs ? [{ title: 'Supporting Document', url: c.supportingDocs.startsWith('http') || c.supportingDocs.startsWith('/') ? c.supportingDocs : `/uploads/${c.supportingDocs}`, size: 'PDF' }] : []
+      summary: c.description || c.summary,
+      status: c.status === 'Open' ? 'active' : (c.status === 'Closed' ? 'completed' : c.status || 'upcoming'),
+      openingDate: c.startDate || c.openingDate,
+      closingDate: c.endDate || c.closingDate,
+      externalUrl: c.externalUrl || c.relatedLinks || null,
     })), ['openingDate']);
-  },
-  getByStatus: async (status) => {
-    const all = await consultationService.getAll();
-    return all.filter((c) => c.status === status);
   },
   getActive: async () => {
     const all = await consultationService.getAll();
-    return all.filter((c) => c.status === 'active');
+    return all.filter((c) => c.status === 'active' || c.status === 'Open');
   },
 }

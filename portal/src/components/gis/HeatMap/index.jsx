@@ -151,7 +151,7 @@ export default function HeatMap({ installations = [], selectedParish, selectedTy
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-gradient-to-r from-navy-900 via-[#1a4068] to-teal-800 px-4 py-3 text-white">
         <div>
           <p className="text-caption font-semibold uppercase tracking-wider text-teal-200">GIS layer</p>
-          <p className="text-h4 text-white">Bermuda solar installations</p>
+          <p className="text-h4 text-white">Bermuda solar PV applications</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex rounded-lg bg-white/10 p-0.5 backdrop-blur-sm">

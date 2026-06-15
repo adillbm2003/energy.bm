@@ -160,7 +160,8 @@ function getFriendlyViewName(viewId) {
     'search': 'Global Search Results',
     'preview': 'Live Portal Preview',
     'settings': 'CMS & Global Site Settings',
-    'innovation': 'Energy Innovation & Emerging Technologies'
+    'innovation': 'Energy Innovation & Emerging Technologies',
+    'statistics': 'Statistics & Data File Manager',
   };
   return names[viewId] || 'CMS Admin';
 }
@@ -260,6 +261,9 @@ function renderCurrentView(event) {
       break;
     case 'innovation':
       renderInnovation();
+      break;
+    case 'statistics':
+      switchStatTab('files');
       break;
   }
 }
@@ -2848,10 +2852,10 @@ window.addEventListener('DOMContentLoaded', async () => {
 async function initApp() {
   await initDatabase();
   setupNavigation();
-  
+
   // Start on Dashboard
   switchView('dashboard');
-  
+
   const closeBtn = document.querySelector('#cms-modal .close-btn');
   if (closeBtn) {
     closeBtn.addEventListener('click', closeModal);
@@ -2860,4 +2864,163 @@ async function initApp() {
   if (cancelBtn) {
     cancelBtn.addEventListener('click', closeModal);
   }
+}
+
+// ── DATA FILE MANAGER ─────────────────────────────────────────────────────────
+
+function switchStatTab(tab) {
+  document.getElementById('stat-panel-files').style.display = tab === 'files' ? '' : 'none';
+  document.getElementById('stat-panel-monthly').style.display = tab === 'monthly' ? '' : 'none';
+  const tabFiles = document.getElementById('stat-tab-files');
+  const tabMonthly = document.getElementById('stat-tab-monthly');
+  tabFiles.style.borderBottomColor = tab === 'files' ? 'var(--accent-cyan)' : 'transparent';
+  tabFiles.style.color = tab === 'files' ? 'var(--accent-cyan)' : 'var(--text-secondary)';
+  tabMonthly.style.borderBottomColor = tab === 'monthly' ? 'var(--accent-cyan)' : 'transparent';
+  tabMonthly.style.color = tab === 'monthly' ? 'var(--accent-cyan)' : 'var(--text-secondary)';
+  if (tab === 'files') loadDataFiles();
+}
+
+async function loadDataFiles() {
+  const container = document.getElementById('data-files-list');
+  container.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-secondary);">Loading…</div>';
+  try {
+    const res = await fetch('/api/data-files');
+    if (!res.ok) throw new Error(await res.text());
+    const files = await res.json();
+    renderDataFiles(files);
+  } catch (err) {
+    container.innerHTML = `<div style="color:var(--danger); padding:1rem;">Error loading data files: ${escapeHTML(err.message)}</div>`;
+  }
+}
+
+function renderDataFiles(files) {
+  const container = document.getElementById('data-files-list');
+  container.innerHTML = '';
+  files.forEach(f => {
+    const sizeKB = f.file ? (f.file.size / 1024).toFixed(1) + ' KB' : '—';
+    const lastMod = f.file ? new Date(f.file.lastModified).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : 'File not found';
+    const card = document.createElement('div');
+    card.className = 'dashboard-card';
+    card.style.cssText = 'overflow:hidden;';
+    card.innerHTML = `
+      <div class="card-header" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+        <div>
+          <h3 style="margin:0; font-size:1rem;">${escapeHTML(f.label)}</h3>
+          <p style="margin:0.25rem 0 0; font-size:0.8rem; color:var(--text-secondary);">${escapeHTML(f.description)}</p>
+        </div>
+        ${f.file
+          ? `<span style="background:var(--success-muted,#ecfdf5); color:var(--success,#16a34a); border:1px solid #bbf7d0; border-radius:999px; padding:0.25rem 0.75rem; font-size:0.75rem; font-weight:600;">✓ File present</span>`
+          : `<span style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca; border-radius:999px; padding:0.25rem 0.75rem; font-size:0.75rem; font-weight:600;">⚠ Missing</span>`}
+      </div>
+      <div style="padding:1.25rem; display:grid; grid-template-columns:1fr auto; gap:1rem; align-items:end;">
+        <div>
+          <div style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.5rem;">
+            <strong>Filename:</strong> ${escapeHTML(f.filename)}<br>
+            <strong>Size:</strong> ${sizeKB} &nbsp;|&nbsp; <strong>Last updated:</strong> ${lastMod}
+          </div>
+          <div id="upload-status-${f.key}" style="font-size:0.82rem; min-height:1.5rem;"></div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:0.5rem; min-width:180px;">
+          ${f.file ? `
+          <a href="/portal/documents/${encodeURIComponent(f.filename)}" download
+            style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 0.875rem; border-radius:var(--border-radius-sm); background:var(--surface-secondary); color:var(--text-primary); border:1px solid var(--border-color); font-size:0.82rem; font-weight:500; cursor:pointer; text-decoration:none;">
+            ⬇ Download Current
+          </a>` : ''}
+          <label style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 0.875rem; border-radius:var(--border-radius-sm); background:var(--accent-cyan); color:#fff; border:none; font-size:0.82rem; font-weight:600; cursor:pointer;">
+            ⬆ Upload New File
+            <input type="file" accept=".xls,.xlsx" style="display:none;"
+              onchange="uploadDataFile('${f.key}', this)">
+          </label>
+        </div>
+      </div>
+    `;
+    // Stats preview section per file
+    const previewDiv = document.createElement('div');
+    previewDiv.id = f.key === 'vehicles' ? 'fleet-stats-preview' : 'solar-stats-preview';
+    previewDiv.style.cssText = 'padding:0 1.25rem 1.25rem;';
+    card.appendChild(previewDiv);
+
+    container.appendChild(card);
+  });
+
+  // Live stats previews
+  loadFleetPreview();
+  loadSolarPreview();
+}
+
+async function uploadDataFile(key, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById(`upload-status-${key}`);
+  statusEl.innerHTML = '<span style="color:var(--accent-cyan);">⏳ Uploading…</span>';
+  const formData = new FormData();
+  formData.append('file', file);
+  try {
+    const res = await fetch(`/api/data-files/${key}`, { method: 'POST', body: formData });
+    const result = await res.json();
+    if (res.ok && result.success) {
+      statusEl.innerHTML = `<span style="color:var(--success);">✓ Uploaded: ${escapeHTML(result.filename)} (${(result.size/1024).toFixed(1)} KB)</span>`;
+      setTimeout(() => loadDataFiles(), 1500);
+    } else {
+      statusEl.innerHTML = `<span style="color:var(--danger);">✗ ${escapeHTML(result.error || 'Upload failed')}</span>`;
+    }
+  } catch (err) {
+    statusEl.innerHTML = `<span style="color:var(--danger);">✗ Connection error</span>`;
+  }
+  input.value = '';
+}
+
+async function loadFleetPreview() {
+  try {
+    const res = await fetch('/api/vehicles/fleet');
+    if (!res.ok) return;
+    const data = await res.json();
+    const previewEl = document.getElementById('fleet-stats-preview');
+    if (!previewEl) return;
+    previewEl.innerHTML = `
+      <div style="display:flex; flex-wrap:wrap; gap:1rem; margin-top:0.75rem;">
+        <div style="background:var(--surface-secondary); border-radius:8px; padding:0.75rem 1rem; min-width:120px; text-align:center;">
+          <div style="font-size:1.5rem; font-weight:700; color:var(--accent-cyan);">${data.total.toLocaleString()}</div>
+          <div style="font-size:0.75rem; color:var(--text-secondary);">Total EVs</div>
+        </div>
+        ${Object.entries(data.byCategory).map(([cat, count]) => `
+          <div style="background:var(--surface-secondary); border-radius:8px; padding:0.75rem 1rem; min-width:120px; text-align:center;">
+            <div style="font-size:1.25rem; font-weight:700; color:var(--text-primary);">${count.toLocaleString()}</div>
+            <div style="font-size:0.72rem; color:var(--text-secondary);">${escapeHTML(cat)}</div>
+          </div>`).join('')}
+      </div>
+      <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.5rem;">As at ${data.asOf} · Top makes: ${data.topMakes.slice(0,3).map(m=>m.make.trim()).join(', ')}</p>
+    `;
+  } catch {}
+}
+
+async function loadSolarPreview() {
+  try {
+    const res = await fetch('/api/solar/stats');
+    if (!res.ok) return;
+    const data = await res.json();
+    const previewEl = document.getElementById('solar-stats-preview');
+    if (!previewEl) return;
+    previewEl.innerHTML = `
+      <div style="display:flex; flex-wrap:wrap; gap:1rem; margin-top:0.75rem;">
+        <div style="background:var(--surface-secondary); border-radius:8px; padding:0.75rem 1rem; min-width:120px; text-align:center;">
+          <div style="font-size:1.5rem; font-weight:700; color:#f59e0b;">${data.total.toLocaleString()}</div>
+          <div style="font-size:0.75rem; color:var(--text-secondary);">Total Permits</div>
+        </div>
+        <div style="background:var(--surface-secondary); border-radius:8px; padding:0.75rem 1rem; min-width:120px; text-align:center;">
+          <div style="font-size:1.5rem; font-weight:700; color:#16a34a;">${data.activeInstalls.toLocaleString()}</div>
+          <div style="font-size:0.75rem; color:var(--text-secondary);">Active Installs</div>
+        </div>
+        <div style="background:var(--surface-secondary); border-radius:8px; padding:0.75rem 1rem; min-width:130px; text-align:center;">
+          <div style="font-size:1.5rem; font-weight:700; color:#0891b2;">${(data.totalKWExtracted/1000).toFixed(1)} MW</div>
+          <div style="font-size:0.75rem; color:var(--text-secondary);">Est. Capacity</div>
+        </div>
+        <div style="background:var(--surface-secondary); border-radius:8px; padding:0.75rem 1rem; min-width:120px; text-align:center;">
+          <div style="font-size:1.5rem; font-weight:700; color:#7c3aed;">${data.byYear.slice(-1)[0]?.count || 0}</div>
+          <div style="font-size:0.75rem; color:var(--text-secondary);">Permits in ${data.byYear.slice(-1)[0]?.year || '—'}</div>
+        </div>
+      </div>
+      <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.5rem;">Top district: ${data.byDistrict[0]?.district || '—'} (${data.byDistrict[0]?.count || 0} permits) · Residential: ${data.byWorkClass.find(w=>w.type==='Residential')?.count || 0} / Commercial: ${data.byWorkClass.find(w=>w.type==='Commercial')?.count || 0}</p>
+    `;
+  } catch {}
 }

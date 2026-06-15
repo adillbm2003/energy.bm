@@ -37,7 +37,7 @@ export default function GIS() {
     <>
       <PageBanner
         title="Bermuda Renewable Energy Heat Map"
-        subtitle="Solar installation locations displayed on a map of Bermuda. Data sourced from Department of Planning records."
+        subtitle="Solar PV permit applications from Department of Planning records (2019–present)"
         breadcrumbs={[
           { label: 'Data & GIS', to: ROUTES.dashboard },
           { label: 'GIS Heat Map', to: ROUTES.gis },

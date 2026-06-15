@@ -28,6 +28,8 @@ import { policyService } from '../../services'
 
 import { filterBySearch, filterByField } from '../../utils/filter'
 
+import { EXTERNAL_LINKS } from '../../constants/externalLinks'
+
 
 
 export default function Policies() {
@@ -103,6 +105,19 @@ export default function Policies() {
       <section className="section-padding">
 
         <div className="container-page">
+
+          {/* Legislation notice */}
+          <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 px-5 py-4 text-sm text-blue-800">
+            For full legislation and statutes, visit{' '}
+            <a
+              href={EXTERNAL_LINKS.bermudaLaws}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold underline hover:text-blue-900"
+            >
+              www.bermudalaws.bm
+            </a>
+          </div>
 
           <div className="mb-6 grid gap-4 md:grid-cols-3">
 

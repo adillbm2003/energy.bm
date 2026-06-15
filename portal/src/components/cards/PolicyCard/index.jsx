@@ -14,6 +14,7 @@ import { resolveContentImage } from '../../../utils/contentImages'
 
 export default function PolicyCard({ policy }) {
 
+  const hasRealFile = policy.downloadUrl && policy.downloadUrl !== '#' && !policy.downloadUrl.startsWith('blob:')
   const external = isExternalUrl(policy.downloadUrl)
 
 
@@ -62,6 +63,14 @@ export default function PolicyCard({ policy }) {
 
           </Button>
 
+        ) : hasRealFile ? (
+
+          <Button href={policy.downloadUrl} variant="outline" size="sm" target="_blank" rel="noopener noreferrer" aria-label={`Open ${policy.title}`}>
+
+            View
+
+          </Button>
+
         ) : (
 
           <Button
@@ -72,11 +81,11 @@ export default function PolicyCard({ policy }) {
 
             aria-label={`Download ${policy.title}`}
 
-            onClick={() => downloadMockDocument({ title: policy.title, summary: policy.summary, category: policy.category })}
+            onClick={() => downloadMockDocument({ title: policy.title, summary: policy.summary, category: policy.category, content: policy.content })}
 
           >
 
-            Download
+            Download PDF
 
           </Button>
 

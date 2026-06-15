@@ -6,4 +6,10 @@ export default defineConfig(({ mode }) => ({
   // Use `npm run build:gh-pages` when deploying to GitHub Pages (repo name subpath).
   base: mode === 'gh-pages' ? '/BERMUDS/' : '/portal/',
   plugins: [react(), tailwindcss()],
+  server: {
+    proxy: {
+      '/api': 'http://localhost:8000',
+      '/uploads': 'http://localhost:8000',
+    },
+  },
 }))
