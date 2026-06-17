@@ -1770,6 +1770,28 @@ async function runMigrationsInline() {
         );
       }
     }
+    // Seed innovation_topics if empty
+    const innovationCheck = await client.query("SELECT COUNT(*) FROM innovation_topics");
+    if (parseInt(innovationCheck.rows[0].count, 10) === 0) {
+      const topics = [
+        ['inn-1','Smart Grids','Advanced grid management enabling two-way power flows and distributed energy integration.','Active','/dashboard/renewable','View grid data'],
+        ['inn-2','Battery Energy Storage','Grid-scale and residential storage for peak shaving and renewable integration.','Active','/dashboard/renewable','Storage metrics'],
+        ['inn-3','Artificial Intelligence','AI applications for demand forecasting, grid optimisation, and predictive maintenance.','Research','/education','Learning resources'],
+        ['inn-4','Distributed Energy Resources','Coordinating rooftop solar, storage, and flexible loads across the grid.','Active','/registry','Energy registry'],
+        ['inn-5','Virtual Power Plants','Aggregating distributed assets to provide grid services.','Pilot','/projects','View projects'],
+        ['inn-6','Demand Response','Technologies enabling consumers to reduce load during peak periods.','Active','/dashboard/transition','Transition dashboard'],
+        ['inn-7','Digital Twins','Virtual models of energy infrastructure for planning and operations.','Research','/gis','GIS platform'],
+        ['inn-8','Advanced Energy Analytics','Data-driven insights for policy, planning, and operational decisions.','Active','/dashboard/renewable','Explore dashboards'],
+        ['inn-9','Blockchain & Energy Systems','Exploring distributed ledger applications for energy trading and grid management.','Research','/contact','Partner with us'],
+        ['inn-10','Digital Currency & Energy','This section will provide public awareness information on vendors and service providers that accept digital currency, as part of Bermuda\'s emerging technology landscape. This content is for informational purposes only and does not constitute financial advice.','Coming Soon',null,'Content is being developed with industry partners and will be published when ready.'],
+      ];
+      for (const [id, title, description, status, linkTo, linkLabel] of topics) {
+        await client.query(
+          `INSERT INTO innovation_topics (id, title, description, status, link_to, link_label) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING`,
+          [id, title, description, status, linkTo, linkLabel]
+        );
+      }
+    }
     // Seed default admin user if not exists
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);`);
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP;`);

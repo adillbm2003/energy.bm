@@ -36,17 +36,19 @@ function ConsultationCard({ consultation }) {
             </div>
           )}
         </dl>
-        <div className="mt-5">
-          <Button
-            href={forumUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            variant="primary"
-            size="sm"
-          >
-            Submit Your Response →
-          </Button>
-        </div>
+        {(consultation.status === 'Open' || consultation.status === 'active') && (
+          <div className="mt-5">
+            <Button
+              href={forumUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="primary"
+              size="sm"
+            >
+              Submit Your Response →
+            </Button>
+          </div>
+        )}
       </div>
     </article>
   )
