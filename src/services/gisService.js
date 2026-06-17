@@ -10,7 +10,11 @@ function coordToLatLng(x, y) {
 
 export const gisService = {
   getInstallations: async () => {
-    const items = await fetchFromAPI('/api/solarInstallations', gisInstallations)
+    // Prefer the Excel-parsed endpoint (uploaded via CMS), fall back to DB records, then mock
+    let items = await fetchFromAPI('/api/solar/installations', [])
+    if (!Array.isArray(items) || items.length === 0) {
+      items = await fetchFromAPI('/api/solarInstallations', gisInstallations)
+    }
     return items.map(i => {
       let lat = i.lat ?? null
       let lng = i.lng ?? null
