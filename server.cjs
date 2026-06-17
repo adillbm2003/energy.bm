@@ -1679,7 +1679,60 @@ app.use((err, req, res, next) => {
   });
 });
 
+async function runMigrationsInline() {
+  const client = await db.pool.connect();
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS schema_migrations (
+        version INT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await client.query(`CREATE TABLE IF NOT EXISTS kpis (id VARCHAR(50) PRIMARY KEY, name VARCHAR(255), value VARCHAR(50), unit VARCHAR(50), last_updated DATE);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS news (id VARCHAR(50) PRIMARY KEY, title TEXT, summary TEXT, content TEXT, image TEXT, publish_date DATE, scheduled_publish_date DATE, scheduled_expiry_date DATE, status VARCHAR(50), target_site VARCHAR(50), modified_by VARCHAR(100), category VARCHAR(100) DEFAULT 'Renewable Energy', featured BOOLEAN DEFAULT TRUE, slug VARCHAR(255), author VARCHAR(100), tags TEXT, excerpt TEXT);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS policies (id VARCHAR(50) PRIMARY KEY, title TEXT, category VARCHAR(100), effective_date DATE, expiry_date DATE, scheduled_publish_date DATE, scheduled_expiry_date DATE, description TEXT, pdf_link TEXT, status VARCHAR(50), target_site VARCHAR(50), modified_by VARCHAR(100));`);
+    await client.query(`CREATE TABLE IF NOT EXISTS consultations (id VARCHAR(50) PRIMARY KEY, title TEXT, description TEXT, start_date DATE, end_date DATE, scheduled_publish_date DATE, scheduled_expiry_date DATE, status VARCHAR(50), related_links TEXT, supporting_docs TEXT, target_site VARCHAR(50), modified_by VARCHAR(100), external_url TEXT);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS static_pages (id VARCHAR(50) PRIMARY KEY, title TEXT, route TEXT, content TEXT, seo_title TEXT, seo_keywords TEXT, seo_description TEXT, status VARCHAR(50), image TEXT, last_updated DATE, author VARCHAR(100), target_site VARCHAR(50), modified_by VARCHAR(100));`);
+    await client.query(`CREATE TABLE IF NOT EXISTS projects (id VARCHAR(50) PRIMARY KEY, title TEXT, description TEXT, timeline VARCHAR(100), status VARCHAR(50), image TEXT, target_site VARCHAR(50), category VARCHAR(100), start_date DATE, progress INT DEFAULT 0, budget TEXT, location TEXT, milestones JSONB, documents JSONB, gallery JSONB);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS tracker (id VARCHAR(50) PRIMARY KEY, name TEXT, type VARCHAR(100), sector VARCHAR(100), stage VARCHAR(100), progress INT, status_label VARCHAR(100), related_docs TEXT, last_updated DATE, target_site VARCHAR(50));`);
+    await client.query(`CREATE TABLE IF NOT EXISTS installers (id VARCHAR(50) PRIMARY KEY, name TEXT, contact TEXT, website TEXT, status VARCHAR(50), parish VARCHAR(100) DEFAULT 'Hamilton', description TEXT, certifications VARCHAR(500) DEFAULT 'Registered Solar PV Installer, Battery Storage', projects INTEGER DEFAULT 0, rating NUMERIC(3,2) DEFAULT 5.0);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS education (id VARCHAR(50) PRIMARY KEY, title TEXT, category VARCHAR(100), description TEXT, attachment TEXT, target_site VARCHAR(50), type VARCHAR(100), file_size VARCHAR(50), image TEXT);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS media (id VARCHAR(50) PRIMARY KEY, name TEXT, type VARCHAR(50), size VARCHAR(50), uploaded_by VARCHAR(100), date DATE, url TEXT);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS settings (id INT PRIMARY KEY DEFAULT 1 CHECK (id = 1), site_name TEXT, contact_email TEXT, footer_info TEXT, social_facebook TEXT, social_twitter TEXT, social_instagram TEXT, active_theme TEXT, contact_phone TEXT, contact_office_location TEXT, contact_hours TEXT, contact_department_list TEXT, allowed_file_types TEXT, max_upload_size TEXT, featured_guide TEXT, featured_tip TEXT, featured_resource TEXT, featured_infographic TEXT);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS energy_guides (id VARCHAR(50) PRIMARY KEY, title TEXT, category VARCHAR(100), summary TEXT, cover_image TEXT, pdf_attachment TEXT, featured_image TEXT, key_takeaways TEXT, estimated_savings VARCHAR(100), publish_date DATE, featured_flag BOOLEAN DEFAULT FALSE, status VARCHAR(50), target_site VARCHAR(50), modified_by VARCHAR(100));`);
+    await client.query(`CREATE TABLE IF NOT EXISTS infographics (id VARCHAR(50) PRIMARY KEY, title TEXT, image TEXT, description TEXT, category VARCHAR(100), publish_date DATE, status VARCHAR(50), target_site VARCHAR(50), modified_by VARCHAR(100));`);
+    await client.query(`CREATE TABLE IF NOT EXISTS roadmaps (id VARCHAR(50) PRIMARY KEY, title TEXT, description TEXT, timeline_type VARCHAR(100), milestones JSONB, status VARCHAR(50) DEFAULT 'Active', target_site VARCHAR(50), modified_by VARCHAR(100), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS bursaries (id VARCHAR(50) PRIMARY KEY, name TEXT, school TEXT, field_of_study TEXT, academic_year VARCHAR(50), status VARCHAR(50) DEFAULT 'Active', amount VARCHAR(50), photo_url TEXT, guidelines_url TEXT, bio TEXT, target_site VARCHAR(50), modified_by VARCHAR(100), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS space_content (id VARCHAR(50) PRIMARY KEY, title TEXT, slug VARCHAR(100), category VARCHAR(100), content TEXT, summary TEXT, pdf_link TEXT, image TEXT, status VARCHAR(50) DEFAULT 'Published', target_site VARCHAR(50), modified_by VARCHAR(100), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS recycle_bin (id VARCHAR(50) PRIMARY KEY, deleted_at DATE DEFAULT CURRENT_DATE, original_collection VARCHAR(50), item_data JSONB);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS versions (id VARCHAR(50) PRIMARY KEY, item_id VARCHAR(50), collection_name VARCHAR(50), version_number INT, title TEXT, modified_at TIMESTAMP, modified_by VARCHAR(100), data TEXT);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS logs (id VARCHAR(100) PRIMARY KEY, user_name VARCHAR(100), action TEXT, content_type VARCHAR(50), content_name TEXT, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS users (id VARCHAR(50) PRIMARY KEY, username VARCHAR(50) UNIQUE NOT NULL, email VARCHAR(255) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL, role VARCHAR(50) DEFAULT 'Viewer' CHECK (role IN ('Viewer','Editor','Approver','Administrator')), is_active BOOLEAN DEFAULT TRUE, reset_token VARCHAR(255), reset_token_expires TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS innovation_topics (id VARCHAR(50) PRIMARY KEY, title VARCHAR(255) NOT NULL, description TEXT NOT NULL, status VARCHAR(50) NOT NULL, link_to VARCHAR(255), link_label VARCHAR(255), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS statistics_history (id VARCHAR(50) PRIMARY KEY, data_type VARCHAR(50) NOT NULL, period VARCHAR(20) NOT NULL, value NUMERIC, unit VARCHAR(50), notes TEXT, uploaded_by VARCHAR(100), uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS solar_installations (id TEXT PRIMARY KEY, name TEXT NOT NULL, parish TEXT, type TEXT, capacity NUMERIC, status TEXT DEFAULT 'Active', install_date DATE, installer TEXT, coordinate_x NUMERIC DEFAULT 50, coordinate_y NUMERIC DEFAULT 50, notes TEXT, created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_versions_item_id ON versions(item_id);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs(timestamp DESC);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_news_publish_date ON news(publish_date DESC);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_policies_status ON policies(status);`);
+    // Seed default admin user if not exists
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP;`);
+    const userCheck = await client.query("SELECT COUNT(*) FROM users WHERE email = 'energy@gov.bm'");
+    if (parseInt(userCheck.rows[0].count, 10) === 0) {
+      await client.query(`INSERT INTO users (id, username, email, password_hash, role, is_active) VALUES ('usr-admin','energy_admin','energy@gov.bm','$2b$10$go00jDF64O/N3vkCzB.0kOv/Y2050sltz5sY.XsRFPIP50KjTtylu','Administrator',TRUE) ON CONFLICT DO NOTHING;`);
+    }
+    console.log('[Startup] Database tables verified/created.');
+  } catch (err) {
+    console.error('[Startup] Migration error:', err.message);
+  } finally {
+    client.release();
+  }
+}
+
 app.listen(PORT, async () => {
+  await runMigrationsInline();
   await fetchTableColumns();
   try {
     await runPostgresScheduler();

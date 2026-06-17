@@ -19,4 +19,4 @@ RUN rm -rf portal/src portal/public portal/vite.config.js portal/package*.json
 EXPOSE 8000
 ENV NODE_ENV=production
 # Run DB migrations then start the server
-CMD ["sh", "-c", "node migrate.cjs && node server.cjs"]
+CMD ["node", "server.cjs"]
