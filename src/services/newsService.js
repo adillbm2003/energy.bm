@@ -13,7 +13,8 @@ export const newsService = {
       category: n.category || 'Renewable Energy',
       featured: n.featured ?? false,
       author: n.author || 'Department of Energy',
-      publishDate: n.publishDate || n.publishDate || n.publish_date,
+      publishedAt: n.publishedAt || n.publish_date,
+      publishDate: n.publishDate || n.publishedAt || n.publish_date,
       image: n.image,
       content: n.content,
     })), ['publishDate'])

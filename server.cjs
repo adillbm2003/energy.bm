@@ -1711,11 +1711,65 @@ async function runMigrationsInline() {
     await client.query(`CREATE TABLE IF NOT EXISTS users (id VARCHAR(50) PRIMARY KEY, username VARCHAR(50) UNIQUE NOT NULL, email VARCHAR(255) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL, role VARCHAR(50) DEFAULT 'Viewer' CHECK (role IN ('Viewer','Editor','Approver','Administrator')), is_active BOOLEAN DEFAULT TRUE, reset_token VARCHAR(255), reset_token_expires TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
     await client.query(`CREATE TABLE IF NOT EXISTS innovation_topics (id VARCHAR(50) PRIMARY KEY, title VARCHAR(255) NOT NULL, description TEXT NOT NULL, status VARCHAR(50) NOT NULL, link_to VARCHAR(255), link_label VARCHAR(255), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
     await client.query(`CREATE TABLE IF NOT EXISTS statistics_history (id VARCHAR(50) PRIMARY KEY, data_type VARCHAR(50) NOT NULL, period VARCHAR(20) NOT NULL, value NUMERIC, unit VARCHAR(50), notes TEXT, uploaded_by VARCHAR(100), uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`);
-    await client.query(`CREATE TABLE IF NOT EXISTS solar_installations (id TEXT PRIMARY KEY, name TEXT NOT NULL, parish TEXT, type TEXT, capacity NUMERIC, status TEXT DEFAULT 'Active', install_date DATE, installer TEXT, coordinate_x NUMERIC DEFAULT 50, coordinate_y NUMERIC DEFAULT 50, notes TEXT, created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP);`);
+    await client.query(`CREATE TABLE IF NOT EXISTS solar_installations (id TEXT PRIMARY KEY, name TEXT NOT NULL, parish TEXT, type TEXT, capacity NUMERIC, status TEXT DEFAULT 'Active', install_date DATE, installer TEXT, coordinate_x NUMERIC DEFAULT 50, coordinate_y NUMERIC DEFAULT 50, lat NUMERIC, lng NUMERIC, notes TEXT, created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP);`);
+    await client.query(`ALTER TABLE solar_installations ADD COLUMN IF NOT EXISTS lat NUMERIC;`);
+    await client.query(`ALTER TABLE solar_installations ADD COLUMN IF NOT EXISTS lng NUMERIC;`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_versions_item_id ON versions(item_id);`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs(timestamp DESC);`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_news_publish_date ON news(publish_date DESC);`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_policies_status ON policies(status);`);
+    // Seed statistics_history with EV and solar adoption data if empty
+    const statsCheck = await client.query("SELECT COUNT(*) FROM statistics_history");
+    if (parseInt(statsCheck.rows[0].count, 10) === 0) {
+      const evData = [
+        ['stat-ev-2019','ev','2019',120,'vehicles'],
+        ['stat-ev-2020','ev','2020',185,'vehicles'],
+        ['stat-ev-2021','ev','2021',290,'vehicles'],
+        ['stat-ev-2022','ev','2022',420,'vehicles'],
+        ['stat-ev-2023','ev','2023',580,'vehicles'],
+        ['stat-ev-2024','ev','2024',720,'vehicles'],
+        ['stat-ev-2025','ev','2025',910,'vehicles'],
+      ];
+      const solarData = [
+        ['stat-sol-2019','solar','2019',3.2,'MW'],
+        ['stat-sol-2020','solar','2020',6.1,'MW'],
+        ['stat-sol-2021','solar','2021',9.8,'MW'],
+        ['stat-sol-2022','solar','2022',14.5,'MW'],
+        ['stat-sol-2023','solar','2023',19.2,'MW'],
+        ['stat-sol-2024','solar','2024',24.1,'MW'],
+        ['stat-sol-2025','solar','2025',28.7,'MW'],
+      ];
+      for (const [id, type, period, value, unit] of [...evData, ...solarData]) {
+        await client.query(
+          `INSERT INTO statistics_history (id, data_type, period, value, unit, uploaded_by) VALUES ($1,$2,$3,$4,$5,'system') ON CONFLICT DO NOTHING`,
+          [id, type, period, value, unit]
+        );
+      }
+    }
+    // Seed solar_installations if empty
+    const solarInstCheck = await client.query("SELECT COUNT(*) FROM solar_installations");
+    if (parseInt(solarInstCheck.rows[0].count, 10) === 0) {
+      const installations = [
+        ['gis-001','Hamilton Residence','Hamilton','Residential',8.5,'Active','2022-03-10','BE Solar',32.2952,-64.782],
+        ['gis-002','Devonshire Commercial','Devonshire','Commercial',125.0,'Active','2021-06-15','AES Solar',32.3045,-64.758],
+        ['gis-003','Warwick Home','Warwick','Residential',6.2,'Active','2023-01-20','Sunnyside Solar',32.267,-64.8065],
+        ['gis-004','Pembroke Office','Pembroke','Commercial',45.8,'Active','2021-09-05','Greenlight Energy',32.292,-64.7695],
+        ['gis-005','Southampton Retail','Southampton','Commercial',32.0,'Active','2022-07-12','BE Solar',32.252,-64.821],
+        ['gis-006','BHC Community Solar','Sandys','Community',500.0,'Active','2020-11-30','AES Solar',32.293,-64.857],
+        ['gis-007','St. George\'s Site','St. George\'s','Commercial',18.5,'Active','2023-03-18','Sunnyside Solar',32.384,-64.677],
+        ['gis-008','Paget Residence','Paget','Residential',10.2,'Active','2022-05-22','Greenlight Energy',32.2795,-64.777],
+        ['gis-009','Balcony Solar Pilot','Hamilton','Residential',2.4,'Active','2023-08-01','BE Solar',32.2945,-64.7805],
+        ['gis-010','Dockyard Centre','Sandys','Commercial',28.4,'Active','2021-04-14','AES Solar',32.325,-64.834],
+        ['gis-011','Hamilton Hotel','Hamilton','Commercial',95.0,'Active','2022-10-03','BAC Group',32.296,-64.779],
+        ['gis-012','Devonshire Farm Site','Devonshire','Utility',5000.0,'Active','2019-12-01','AES Solar',32.312,-64.748],
+      ];
+      for (const [id, name, parish, type, capacity, status, installDate, installer, lat, lng] of installations) {
+        await client.query(
+          `INSERT INTO solar_installations (id, name, parish, type, capacity, status, install_date, installer, lat, lng) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT DO NOTHING`,
+          [id, name, parish, type, capacity, status, installDate, installer, lat, lng]
+        );
+      }
+    }
     // Seed default admin user if not exists
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);`);
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP;`);
