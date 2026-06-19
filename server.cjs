@@ -1792,6 +1792,15 @@ async function runMigrationsInline() {
         );
       }
     }
+    // Seed NESP 2026 consultation and close any fuels-policy consultations
+    await client.query(`
+      INSERT INTO consultations (id, title, description, start_date, end_date, status, external_url)
+      VALUES ('con-nesp-2026', 'National Energy Security Policy (NESP) 2026',
+        'Public consultation on Bermuda''s updated National Energy Security Policy, covering renewable energy targets, grid resilience, and energy affordability for 2026–2030.',
+        '2026-05-01', '2026-07-31', 'Open', 'https://forum.gov.bm/en/')
+      ON CONFLICT DO NOTHING
+    `);
+    await client.query(`UPDATE consultations SET status = 'Closed' WHERE title ILIKE '%fuel%' AND status != 'Closed'`);
     // Seed default admin user if not exists
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);`);
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP;`);
