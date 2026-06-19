@@ -21,8 +21,7 @@ export default function ElectronicCommunications() {
         title="Electronic Communications"
         subtitle="Regulating and advancing Bermuda's telecommunications and digital infrastructure."
         breadcrumbs={[
-          { label: 'Energy', to: ROUTES.energy },
-          { label: 'Electronic Communications', to: ROUTES.electronicCommunications },
+          { label: 'Electronic Communications', to: '/electronic-communications' },
         ]}
         image={PAGE_IMAGES.telecom}
       />
