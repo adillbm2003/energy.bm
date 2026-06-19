@@ -2,6 +2,28 @@ import { PAGE_IMAGES } from '../constants/branding'
 
 export const news = [
   {
+    id: '7',
+    slug: 'career-fair-expo-june-2026',
+    title: 'Department of Energy at Bermuda Government Career Fair Expo 2026',
+    excerpt:
+      'The Department of Energy showcased Bermuda\'s energy transition at the Government Career Fair Expo on 18 June 2026, engaging students and professionals with live demonstrations of the Energy Simulator.',
+    category: 'Events',
+    featured: true,
+    author: 'Department of Energy',
+    publishedAt: '2026-06-18',
+    image: '/images/events/career-fair-expo-1.jpg',
+    gallery: [
+      '/images/events/career-fair-expo-1.jpg',
+      '/images/events/career-fair-expo-2.jpg',
+    ],
+    content: [
+      'The Department of Energy participated in the Bermuda Government Career Fair Expo held on 18 June 2026, bringing its digital engagement platform and Energy Simulator directly to students and career-seekers across the island.',
+      'Attendees had the opportunity to interact with the live Energy Simulator, exploring how household appliance choices and solar adoption affect monthly energy costs — a hands-on demonstration of the Department\'s commitment to public energy literacy.',
+      'Department representatives engaged in one-on-one conversations with students, young professionals, and members of the public about career pathways in energy, the 2026 Energy Bursary Programme, and Bermuda\'s clean energy transition goals.',
+      'The event reinforced the Department\'s mission to make energy information accessible and actionable for all Bermudians.',
+    ],
+  },
+  {
     id: '1',
     slug: 'bermuda-renewable-energy-milestone',
     title: 'Bermuda Reaches New Renewable Energy Milestone',
