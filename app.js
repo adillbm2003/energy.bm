@@ -494,16 +494,22 @@ function handleRealFileUpload(inputId, targetInputId) {
       } catch (e) {}
       if (statusText) {
         statusText.innerHTML = `<span style="color:var(--danger)">${escapeHTML(errText)}</span>`;
+      } else {
+        alert(errText);
       }
     }
   };
-  
+
   xhr.onerror = () => {
+    const msg = 'Connection error during upload.';
     if (statusText) {
-      statusText.innerHTML = `<span style="color:var(--danger)">Connection error during upload.</span>`;
+      statusText.innerHTML = `<span style="color:var(--danger)">${msg}</span>`;
+    } else {
+      alert(msg);
     }
   };
   
+  xhr.withCredentials = true;
   xhr.open('POST', '/api/upload', true);
   xhr.send(formData);
 }

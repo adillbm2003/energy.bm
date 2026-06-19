@@ -1478,9 +1478,9 @@ app.post('/api/upload', authenticate, authorize('Editor', 'Approver', 'Administr
     const settingsRes = await db.query('SELECT * FROM settings WHERE id = 1');
     const settings = db.snakeToCamel(settingsRes.rows[0] || {});
 
-    const allowedExtsStr = settings.allowedFileTypes || 'pdf,docx,xlsx,png,jpg,jpeg,mp4';
+    const allowedExtsStr = settings.allowedFileTypes || 'pdf,doc,docx,xlsx,png,jpg,jpeg,webp,mp4';
     const allowedExts = allowedExtsStr.toLowerCase().split(',').map(ext => ext.trim().replace(/^\./, ''));
-    const maxMb = parseFloat(settings.maxUploadSize || '10');
+    const maxMb = parseFloat(settings.maxUploadSize || '20');
     
     const fileExt = path.extname(req.file.originalname).toLowerCase().replace(/^\./, '');
     const fileSizeMb = req.file.size / (1024 * 1024);
@@ -1509,7 +1509,10 @@ app.post('/api/upload', authenticate, authorize('Editor', 'Approver', 'Administr
     // Secure hook for future ICAP/ClamAV daemon scan.
     console.log(`[Security Audit] Anti-virus scan run for: ${req.file.originalname} - Result: CLEAN`);
 
-    const fileUrl = `/uploads/${req.file.filename}`;
+    const serverBase = process.env.RAILWAY_PUBLIC_DOMAIN
+      ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+      : `${req.protocol}://${req.get('host')}`;
+    const fileUrl = `${serverBase}/uploads/${req.file.filename}`;
     const fileSizeMbStr = fileSizeMb.toFixed(2) + ' MB';
     const mediaId = `med-${Date.now()}`;
     const newMedia = {
