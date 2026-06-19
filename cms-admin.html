@@ -453,7 +453,7 @@
                 <span>Add Project</span>
               </div>
               <div class="quick-action-btn"
-                onclick="switchView('media'); document.getElementById('media-library-uploader').click();">
+                onclick="switchView('media'); setTimeout(()=>{ const el=document.getElementById('media-file-input'); if(el) el.click(); }, 300);">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"></path>
                 </svg>
@@ -760,7 +760,7 @@
             <div class="preview-bar">
               <div class="site-title site-a">
                 <span class="dot" style="background:#10b981;"></span>
-                <span>Official Live Portal: http://localhost:8000/portal</span>
+                <span>Official Live Portal: https://energybm-main.vercel.app</span>
               </div>
               <div class="device-tabs">
                 <button class="device-btn active" title="Desktop View"><svg viewBox="0 0 24 24" width="14" height="14"
@@ -817,7 +817,7 @@
         </div>
         <p style="color:var(--text-secondary); margin-bottom:1.5rem; font-size:0.875rem;">Manage bursary award recipients. Changes appear on the public Bursary page.</p>
         <div class="table-container">
-          <table class="data-table" id="bursaries-table">
+          <table class="cms-table" id="bursaries-table">
             <thead>
               <tr>
                 <th>Photo</th>
@@ -836,10 +836,10 @@
         </div>
         <!-- Bursary Recipient Form Modal -->
         <div id="bursary-modal" class="modal-overlay" style="display:none;">
-          <div class="modal-panel" style="max-width:600px;">
+          <div class="modal-content" style="max-width:640px; width:100%;">
             <div class="modal-header">
               <h3 id="bursary-modal-title">Add Bursary Recipient</h3>
-              <button onclick="closeBursaryForm()" class="modal-close">&times;</button>
+              <button onclick="closeBursaryForm()" class="close-btn" style="background:none;border:none;cursor:pointer;font-size:1.5rem;line-height:1;color:var(--text-secondary);">&times;</button>
             </div>
             <div class="modal-body">
               <input type="hidden" id="bursary-id">
@@ -849,13 +849,13 @@
                   <input type="text" id="bursary-name" placeholder="e.g. Neriah Bean" required>
                 </div>
                 <div class="form-group">
-                  <label>Academic Year *</label>
+                  <label>Academic Year</label>
                   <input type="text" id="bursary-year" placeholder="e.g. 2025">
                 </div>
               </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label>School / University *</label>
+                  <label>School / University</label>
                   <input type="text" id="bursary-school" placeholder="e.g. Oakwood University">
                 </div>
                 <div class="form-group">
@@ -864,8 +864,18 @@
                 </div>
               </div>
               <div class="form-group">
-                <label>Photo URL</label>
-                <input type="text" id="bursary-photo" placeholder="/images/portraits/name.jpg">
+                <label>Photo</label>
+                <div style="display:flex;gap:0.5rem;align-items:flex-start;">
+                  <input type="text" id="bursary-photo" placeholder="/images/portraits/name.jpg" style="flex:1;">
+                  <label class="btn btn-secondary" style="cursor:pointer;white-space:nowrap;font-size:0.8rem;">
+                    Upload Photo
+                    <input type="file" accept="image/*" style="display:none;" onchange="uploadBursaryPhoto(this)">
+                  </label>
+                </div>
+                <div id="bursary-photo-preview" style="margin-top:0.5rem;display:none;">
+                  <img id="bursary-photo-img" src="" alt="Preview" style="height:80px;width:80px;border-radius:50%;object-fit:cover;border:2px solid var(--border-color);">
+                </div>
+                <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.35rem;">Upload a photo or paste the image URL above. For best results use a square photo (e.g. 400×400 px).</p>
               </div>
               <div class="form-group">
                 <label>Achievement / Award Reason</label>
@@ -883,7 +893,7 @@
                 </select>
               </div>
             </div>
-            <div class="modal-footer">
+            <div class="form-footer">
               <button onclick="closeBursaryForm()" class="btn btn-secondary">Cancel</button>
               <button onclick="saveBursaryRecipient()" class="btn btn-primary">Save Recipient</button>
             </div>
@@ -899,7 +909,7 @@
         </div>
         <p style="color:var(--text-secondary); margin-bottom:1.5rem; font-size:0.875rem;">Manage the leadership team displayed on the About page. Order by Display Order number (lower = first).</p>
         <div class="table-container">
-          <table class="data-table" id="leadership-table">
+          <table class="cms-table" id="leadership-table">
             <thead>
               <tr>
                 <th>Photo</th>
@@ -917,10 +927,10 @@
         </div>
         <!-- Leadership Form Modal -->
         <div id="leadership-modal" class="modal-overlay" style="display:none;">
-          <div class="modal-panel" style="max-width:600px;">
+          <div class="modal-content" style="max-width:640px; width:100%;">
             <div class="modal-header">
               <h3 id="leadership-modal-title">Add Leadership Member</h3>
-              <button onclick="closeLeadershipForm()" class="modal-close">&times;</button>
+              <button onclick="closeLeadershipForm()" class="close-btn" style="background:none;border:none;cursor:pointer;font-size:1.5rem;line-height:1;color:var(--text-secondary);">&times;</button>
             </div>
             <div class="modal-body">
               <input type="hidden" id="leadership-id">
@@ -934,29 +944,39 @@
                   <input type="text" id="leadership-role" placeholder="e.g. Minister of Energy" required>
                 </div>
               </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Photo URL</label>
-                  <input type="text" id="leadership-image" placeholder="/images/portraits/name.jpg">
+              <div class="form-group">
+                <label>Photo</label>
+                <div style="display:flex;gap:0.5rem;align-items:flex-start;">
+                  <input type="text" id="leadership-image" placeholder="/images/portraits/name.jpg" style="flex:1;">
+                  <label class="btn btn-secondary" style="cursor:pointer;white-space:nowrap;font-size:0.8rem;">
+                    Upload Photo
+                    <input type="file" accept="image/*" style="display:none;" onchange="uploadLeadershipPhoto(this)">
+                  </label>
                 </div>
-                <div class="form-group">
+                <div id="leadership-photo-preview" style="margin-top:0.5rem;display:none;">
+                  <img id="leadership-photo-img" src="" alt="Preview" style="height:80px;width:80px;border-radius:50%;object-fit:cover;border:2px solid var(--border-color);">
+                </div>
+                <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.35rem;">Upload a photo or paste the image URL. Square photos work best.</p>
+              </div>
+              <div class="form-row">
+                <div class="form-group" style="flex:1;">
                   <label>Display Order</label>
                   <input type="number" id="leadership-order" placeholder="1" min="1">
+                </div>
+                <div class="form-group" style="flex:1;">
+                  <label>Status</label>
+                  <select id="leadership-status">
+                    <option value="Active">Active (shown on site)</option>
+                    <option value="Inactive">Inactive (hidden)</option>
+                  </select>
                 </div>
               </div>
               <div class="form-group">
                 <label>Biography</label>
                 <textarea id="leadership-bio" rows="4" placeholder="Brief bio..."></textarea>
               </div>
-              <div class="form-group">
-                <label>Status</label>
-                <select id="leadership-status">
-                  <option value="Active">Active (shown on site)</option>
-                  <option value="Inactive">Inactive (hidden)</option>
-                </select>
-              </div>
             </div>
-            <div class="modal-footer">
+            <div class="form-footer">
               <button onclick="closeLeadershipForm()" class="btn btn-secondary">Cancel</button>
               <button onclick="saveLeadershipMember()" class="btn btn-primary">Save Member</button>
             </div>
@@ -1773,6 +1793,7 @@
 
   // ===== BURSARY RECIPIENTS =====
   let editingBursaryId = null;
+  let _bursaryItems = [];
 
   async function loadBursaryRecipients() {
     const tbody = document.getElementById('bursaries-tbody');
@@ -1780,26 +1801,29 @@
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-secondary)">Loading...</td></tr>';
     try {
       const res = await fetch('/api/bursaries');
-      const items = res.ok ? await res.json() : [];
-      if (!items.length) {
+      _bursaryItems = res.ok ? await res.json() : [];
+      if (!_bursaryItems.length) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-secondary)">No recipients yet. Click "+ Add Recipient" to begin.</td></tr>';
         return;
       }
-      tbody.innerHTML = items.map(r => `
+      const statusStyle = s => (s === 'Active')
+        ? 'background:#d1fae5;color:#065f46;font-size:0.72rem;padding:2px 8px;border-radius:9999px;font-weight:600;'
+        : 'background:#fee2e2;color:#991b1b;font-size:0.72rem;padding:2px 8px;border-radius:9999px;font-weight:600;';
+      tbody.innerHTML = _bursaryItems.map(r => `
         <tr>
-          <td>${r.photo_url ? `<img src="${r.photo_url}" alt="${r.name}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">` : '<span style="color:var(--text-secondary)">—</span>'}</td>
+          <td>${r.photo_url ? `<img src="${r.photo_url}" alt="${r.name || ''}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">` : '<span style="color:var(--text-secondary)">—</span>'}</td>
           <td style="font-weight:600">${r.name || '—'}</td>
           <td>${r.school || '—'}</td>
           <td>${r.field_of_study || '—'}</td>
           <td>${r.academic_year || '—'}</td>
-          <td><span class="status-badge ${(r.status||'Active')==='Active'?'badge-active':'badge-inactive'}">${r.status||'Active'}</span></td>
-          <td>
-            <button class="btn btn-secondary btn-sm" onclick="editBursaryRecipient(${JSON.stringify(JSON.stringify(r))})">Edit</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteBursaryRecipient('${r.id}','${r.name}')">Delete</button>
+          <td><span style="${statusStyle(r.status||'Active')}">${r.status||'Active'}</span></td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-secondary" style="font-size:0.75rem;padding:0.25rem 0.625rem;" onclick="editBursaryRecipient('${r.id}')">Edit</button>
+            <button class="btn btn-secondary" style="font-size:0.75rem;padding:0.25rem 0.625rem;color:#ef4444;border-color:#ef4444;margin-left:4px;" onclick="deleteBursaryRecipient('${r.id}')">Delete</button>
           </td>
         </tr>`).join('');
     } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--error)">Error: ${e.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:#ef4444">Error loading recipients: ${e.message}</td></tr>`;
     }
   }
 
@@ -1811,11 +1835,13 @@
       if (el) el.value = '';
     });
     document.getElementById('bursary-status').value = 'Active';
+    document.getElementById('bursary-photo-preview').style.display = 'none';
     document.getElementById('bursary-modal').style.display = 'flex';
   }
 
-  function editBursaryRecipient(jsonStr) {
-    const r = JSON.parse(jsonStr);
+  function editBursaryRecipient(id) {
+    const r = _bursaryItems.find(x => String(x.id) === String(id));
+    if (!r) { alert('Recipient not found — please reload.'); return; }
     editingBursaryId = r.id;
     document.getElementById('bursary-modal-title').textContent = 'Edit Bursary Recipient';
     document.getElementById('bursary-id').value = r.id || '';
@@ -1827,6 +1853,10 @@
     document.getElementById('bursary-achievement').value = r.achievement || '';
     document.getElementById('bursary-focus').value = r.focus || '';
     document.getElementById('bursary-status').value = r.status || 'Active';
+    const prev = document.getElementById('bursary-photo-preview');
+    const img = document.getElementById('bursary-photo-img');
+    if (r.photo_url) { img.src = r.photo_url; prev.style.display = 'block'; }
+    else { prev.style.display = 'none'; }
     document.getElementById('bursary-modal').style.display = 'flex';
   }
 
@@ -1834,9 +1864,26 @@
     document.getElementById('bursary-modal').style.display = 'none';
   }
 
+  async function uploadBursaryPhoto(input) {
+    if (!input.files || !input.files[0]) return;
+    const fd = new FormData();
+    fd.append('file', input.files[0]);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: fd });
+      if (!res.ok) { alert('Upload failed'); return; }
+      const data = await res.json();
+      const url = data.url || data.path || '';
+      document.getElementById('bursary-photo').value = url;
+      const img = document.getElementById('bursary-photo-img');
+      img.src = url;
+      document.getElementById('bursary-photo-preview').style.display = 'block';
+    } catch (e) { alert('Upload error: ' + e.message); }
+    input.value = '';
+  }
+
   async function saveBursaryRecipient() {
     const name = document.getElementById('bursary-name').value.trim();
-    if (!name) { alert('Name is required'); return; }
+    if (!name) { alert('Full name is required'); return; }
     const payload = {
       id: editingBursaryId || ('bur-' + Date.now()),
       name,
@@ -1853,22 +1900,27 @@
       const url = editingBursaryId ? `/api/bursaries/${editingBursaryId}` : '/api/bursaries';
       const res = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error(await res.text());
+      showToast('Recipient saved successfully');
       closeBursaryForm();
       loadBursaryRecipients();
     } catch (e) { alert('Save failed: ' + e.message); }
   }
 
-  async function deleteBursaryRecipient(id, name) {
+  async function deleteBursaryRecipient(id) {
+    const r = _bursaryItems.find(x => String(x.id) === String(id));
+    const name = r ? r.name : id;
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
     try {
       const res = await fetch(`/api/bursaries/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error(await res.text());
+      showToast('Recipient deleted');
       loadBursaryRecipients();
     } catch (e) { alert('Delete failed: ' + e.message); }
   }
 
   // ===== LEADERSHIP TEAM =====
   let editingLeadershipId = null;
+  let _leadershipItems = [];
 
   async function loadLeadershipTeam() {
     const tbody = document.getElementById('leadership-tbody');
@@ -1876,25 +1928,28 @@
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-secondary)">Loading...</td></tr>';
     try {
       const res = await fetch('/api/leadership');
-      const items = res.ok ? await res.json() : [];
-      if (!items.length) {
+      _leadershipItems = res.ok ? await res.json() : [];
+      if (!_leadershipItems.length) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-secondary)">No members yet. Click "+ Add Member" to begin.</td></tr>';
         return;
       }
-      tbody.innerHTML = items.map(m => `
+      const statusStyle = s => (s === 'Active')
+        ? 'background:#d1fae5;color:#065f46;font-size:0.72rem;padding:2px 8px;border-radius:9999px;font-weight:600;'
+        : 'background:#fee2e2;color:#991b1b;font-size:0.72rem;padding:2px 8px;border-radius:9999px;font-weight:600;';
+      tbody.innerHTML = _leadershipItems.map(m => `
         <tr>
-          <td>${m.image_url ? `<img src="${m.image_url}" alt="${m.name}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">` : '<span style="color:var(--text-secondary)">—</span>'}</td>
+          <td>${m.image_url ? `<img src="${m.image_url}" alt="${m.name || ''}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">` : '<span style="color:var(--text-secondary)">—</span>'}</td>
           <td style="font-weight:600">${m.name || '—'}</td>
           <td>${m.role || '—'}</td>
           <td style="text-align:center">${m.display_order || 0}</td>
-          <td><span class="status-badge ${(m.status||'Active')==='Active'?'badge-active':'badge-inactive'}">${m.status||'Active'}</span></td>
-          <td>
-            <button class="btn btn-secondary btn-sm" onclick="editLeadershipMember(${JSON.stringify(JSON.stringify(m))})">Edit</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteLeadershipMember('${m.id}','${m.name}')">Delete</button>
+          <td><span style="${statusStyle(m.status||'Active')}">${m.status||'Active'}</span></td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-secondary" style="font-size:0.75rem;padding:0.25rem 0.625rem;" onclick="editLeadershipMember('${m.id}')">Edit</button>
+            <button class="btn btn-secondary" style="font-size:0.75rem;padding:0.25rem 0.625rem;color:#ef4444;border-color:#ef4444;margin-left:4px;" onclick="deleteLeadershipMember('${m.id}')">Delete</button>
           </td>
         </tr>`).join('');
     } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--error)">Error: ${e.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:2rem;color:#ef4444">Error loading members: ${e.message}</td></tr>`;
     }
   }
 
@@ -1907,11 +1962,13 @@
     });
     document.getElementById('leadership-order').value = '';
     document.getElementById('leadership-status').value = 'Active';
+    document.getElementById('leadership-photo-preview').style.display = 'none';
     document.getElementById('leadership-modal').style.display = 'flex';
   }
 
-  function editLeadershipMember(jsonStr) {
-    const m = JSON.parse(jsonStr);
+  function editLeadershipMember(id) {
+    const m = _leadershipItems.find(x => String(x.id) === String(id));
+    if (!m) { alert('Member not found — please reload.'); return; }
     editingLeadershipId = m.id;
     document.getElementById('leadership-modal-title').textContent = 'Edit Leadership Member';
     document.getElementById('leadership-id').value = m.id || '';
@@ -1921,11 +1978,32 @@
     document.getElementById('leadership-order').value = m.display_order || '';
     document.getElementById('leadership-bio').value = m.bio || '';
     document.getElementById('leadership-status').value = m.status || 'Active';
+    const prev = document.getElementById('leadership-photo-preview');
+    const img = document.getElementById('leadership-photo-img');
+    if (m.image_url) { img.src = m.image_url; prev.style.display = 'block'; }
+    else { prev.style.display = 'none'; }
     document.getElementById('leadership-modal').style.display = 'flex';
   }
 
   function closeLeadershipForm() {
     document.getElementById('leadership-modal').style.display = 'none';
+  }
+
+  async function uploadLeadershipPhoto(input) {
+    if (!input.files || !input.files[0]) return;
+    const fd = new FormData();
+    fd.append('file', input.files[0]);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: fd });
+      if (!res.ok) { alert('Upload failed'); return; }
+      const data = await res.json();
+      const url = data.url || data.path || '';
+      document.getElementById('leadership-image').value = url;
+      const img = document.getElementById('leadership-photo-img');
+      img.src = url;
+      document.getElementById('leadership-photo-preview').style.display = 'block';
+    } catch (e) { alert('Upload error: ' + e.message); }
+    input.value = '';
   }
 
   async function saveLeadershipMember() {
@@ -1946,16 +2024,20 @@
       const url = editingLeadershipId ? `/api/leadership/${editingLeadershipId}` : '/api/leadership';
       const res = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error(await res.text());
+      showToast('Member saved successfully');
       closeLeadershipForm();
       loadLeadershipTeam();
     } catch (e) { alert('Save failed: ' + e.message); }
   }
 
-  async function deleteLeadershipMember(id, name) {
+  async function deleteLeadershipMember(id) {
+    const m = _leadershipItems.find(x => String(x.id) === String(id));
+    const name = m ? m.name : id;
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
     try {
       const res = await fetch(`/api/leadership/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error(await res.text());
+      showToast('Member deleted');
       loadLeadershipTeam();
     } catch (e) { alert('Delete failed: ' + e.message); }
   }
