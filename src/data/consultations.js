@@ -6,7 +6,7 @@ export const consultations = [
     id: 'con-nesp-2026',
     title: 'National Energy Security Policy (NESP) 2026',
     description:
-      'Public consultation on Bermuda's updated National Energy Security Policy, covering renewable energy targets, grid resilience, and energy affordability for 2026–2030.',
+      "Public consultation on Bermuda's updated National Energy Security Policy, covering renewable energy targets, grid resilience, and energy affordability for 2026–2030.",
     status: 'Open',
     openingDate: '2026-05-01',
     closingDate: '2026-07-31',
