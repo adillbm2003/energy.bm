@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react'
+import { Component, useMemo, useState } from 'react'
 import PageBanner from '../../components/common/PageBanner'
 import { PAGE_IMAGES } from '../../constants/branding'
 import HeatMap from '../../components/gis/HeatMap'
@@ -11,6 +11,33 @@ import { useAsyncData } from '../../hooks/useAsyncData'
 import { gisService } from '../../services'
 import { ROUTES } from '../../constants/routes'
 import { formatNumber } from '../../utils/format'
+
+class MapErrorBoundary extends Component {
+  state = { hasError: false }
+
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex min-h-[360px] items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 p-8 text-center">
+          <div>
+            <p className="text-base font-semibold text-amber-800">Map temporarily unavailable</p>
+            <p className="mt-2 text-sm text-amber-700">
+              The interactive map could not load. Installation data is still accessible via the Energy Registry.
+            </p>
+            <Button to={ROUTES.registry} variant="primary" className="mt-4">
+              Open Energy Registry
+            </Button>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 export default function GIS() {
   useDocumentTitle('GIS Heat Map')
@@ -26,7 +53,7 @@ export default function GIS() {
     const list = installations ?? []
     return {
       sites: list.length,
-      capacity: list.reduce((sum, i) => sum + i.capacity, 0),
+      capacity: list.reduce((sum, i) => sum + (i.capacity || 0), 0),
       parishes: new Set(list.map((i) => i.parish)).size,
     }
   }, [installations])
@@ -72,11 +99,13 @@ export default function GIS() {
                 onParishChange={setParish}
                 onTypeChange={setType}
               />
-              <HeatMap
-                installations={installations ?? []}
-                selectedParish={parish}
-                selectedType={type}
-              />
+              <MapErrorBoundary>
+                <HeatMap
+                  installations={installations ?? []}
+                  selectedParish={parish}
+                  selectedType={type}
+                />
+              </MapErrorBoundary>
             </div>
             <div className="space-y-4">
               <MapLegend />
