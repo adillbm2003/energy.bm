@@ -1748,25 +1748,33 @@ async function runMigrationsInline() {
     }
     // Seed solar_installations if empty
     const solarInstCheck = await client.query("SELECT COUNT(*) FROM solar_installations");
+    const installations = [
+      ['gis-001','Hamilton Residence','Hamilton','Residential',8.5,'Active','2022-03-10','BE Solar',32.2952,-64.782],
+      ['gis-002','Devonshire Commercial','Devonshire','Commercial',125.0,'Active','2021-06-15','AES Solar',32.3045,-64.758],
+      ['gis-003','Warwick Home','Warwick','Residential',6.2,'Active','2023-01-20','Sunnyside Solar',32.267,-64.8065],
+      ['gis-004','Pembroke Office','Pembroke','Commercial',45.8,'Active','2021-09-05','Greenlight Energy',32.292,-64.7695],
+      ['gis-005','Southampton Retail','Southampton','Commercial',32.0,'Active','2022-07-12','BE Solar',32.252,-64.821],
+      ['gis-006','BHC Community Solar','Sandys','Community',500.0,'Active','2020-11-30','AES Solar',32.293,-64.857],
+      ['gis-007',"St. George's Site",'St. George\'s','Commercial',18.5,'Active','2023-03-18','Sunnyside Solar',32.384,-64.677],
+      ['gis-008','Paget Residence','Paget','Residential',10.2,'Active','2022-05-22','Greenlight Energy',32.2795,-64.777],
+      ['gis-009','Balcony Solar Pilot','Hamilton','Residential',2.4,'Active','2023-08-01','BE Solar',32.2945,-64.7805],
+      ['gis-010','Dockyard Centre','Sandys','Commercial',28.4,'Active','2021-04-14','AES Solar',32.325,-64.834],
+      ['gis-011','Hamilton Hotel','Hamilton','Commercial',95.0,'Active','2022-10-03','BAC Group',32.296,-64.779],
+      ['gis-012','Devonshire Farm Site','Devonshire','Utility',5000.0,'Active','2019-12-01','AES Solar',32.312,-64.748],
+    ];
     if (parseInt(solarInstCheck.rows[0].count, 10) === 0) {
-      const installations = [
-        ['gis-001','Hamilton Residence','Hamilton','Residential',8.5,'Active','2022-03-10','BE Solar',32.2952,-64.782],
-        ['gis-002','Devonshire Commercial','Devonshire','Commercial',125.0,'Active','2021-06-15','AES Solar',32.3045,-64.758],
-        ['gis-003','Warwick Home','Warwick','Residential',6.2,'Active','2023-01-20','Sunnyside Solar',32.267,-64.8065],
-        ['gis-004','Pembroke Office','Pembroke','Commercial',45.8,'Active','2021-09-05','Greenlight Energy',32.292,-64.7695],
-        ['gis-005','Southampton Retail','Southampton','Commercial',32.0,'Active','2022-07-12','BE Solar',32.252,-64.821],
-        ['gis-006','BHC Community Solar','Sandys','Community',500.0,'Active','2020-11-30','AES Solar',32.293,-64.857],
-        ['gis-007','St. George\'s Site','St. George\'s','Commercial',18.5,'Active','2023-03-18','Sunnyside Solar',32.384,-64.677],
-        ['gis-008','Paget Residence','Paget','Residential',10.2,'Active','2022-05-22','Greenlight Energy',32.2795,-64.777],
-        ['gis-009','Balcony Solar Pilot','Hamilton','Residential',2.4,'Active','2023-08-01','BE Solar',32.2945,-64.7805],
-        ['gis-010','Dockyard Centre','Sandys','Commercial',28.4,'Active','2021-04-14','AES Solar',32.325,-64.834],
-        ['gis-011','Hamilton Hotel','Hamilton','Commercial',95.0,'Active','2022-10-03','BAC Group',32.296,-64.779],
-        ['gis-012','Devonshire Farm Site','Devonshire','Utility',5000.0,'Active','2019-12-01','AES Solar',32.312,-64.748],
-      ];
       for (const [id, name, parish, type, capacity, status, installDate, installer, lat, lng] of installations) {
         await client.query(
           `INSERT INTO solar_installations (id, name, parish, type, capacity, status, install_date, installer, lat, lng) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT DO NOTHING`,
           [id, name, parish, type, capacity, status, installDate, installer, lat, lng]
+        );
+      }
+    } else {
+      // Ensure all existing rows have lat/lng populated (fixes rows seeded before lat/lng columns were added)
+      for (const [id, , , , , , , , lat, lng] of installations) {
+        await client.query(
+          `UPDATE solar_installations SET lat = $2, lng = $3 WHERE id = $1 AND (lat IS NULL OR lng IS NULL)`,
+          [id, lat, lng]
         );
       }
     }

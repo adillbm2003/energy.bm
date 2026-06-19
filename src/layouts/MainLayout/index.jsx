@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import Navbar from '../../components/common/Navbar'
 import Footer from '../../components/common/Footer'
+import SimulatorFAB from '../../components/common/SimulatorFAB'
 import { useScrollRestoration } from '../../hooks/useScrollRestoration'
 
 export default function MainLayout() {
@@ -19,6 +20,7 @@ export default function MainLayout() {
         <Outlet />
       </main>
       <Footer />
+      <SimulatorFAB />
     </div>
   )
 }

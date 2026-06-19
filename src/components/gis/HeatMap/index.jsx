@@ -132,6 +132,7 @@ export default function HeatMap({ installations = [], selectedParish, selectedTy
 
   const filtered = useMemo(() => {
     return installations.filter((item) => {
+      if (!item.lat || !item.lng) return false
       if (selectedParish && selectedParish !== 'all' && item.parish !== selectedParish) return false
       if (selectedType && selectedType !== 'all' && item.type !== selectedType) return false
       return true
