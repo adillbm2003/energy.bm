@@ -30,12 +30,14 @@ export const gisService = {
         name: i.name,
         parish: i.parish,
         type: i.type,
-        capacity: i.capacity,
+        capacity: Number(i.capacity) || 0,
         status: i.status || 'Active',
         installDate: i.installDate || i.install_date,
         installer: i.installer,
-        lat,
-        lng,
+        address: i.address || null,
+        annualOutput: Number(i.annualOutput || i.annual_output) || 0,
+        lat: Number(lat),
+        lng: Number(lng),
         notes: i.notes,
       }
     })

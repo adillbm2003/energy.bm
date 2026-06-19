@@ -236,13 +236,21 @@ export default function HeatMap({ installations = [], selectedParish, selectedTy
                   <h3 className="text-h4 text-navy-900">{active.name}</h3>
                 </div>
                 <p className="mt-1 text-body-small text-slate-600">
-                  {active.parish} · {active.type}
+                  {active.parish} · {active.type} · {active.status}
                 </p>
+                {active.address && active.address !== active.name && (
+                  <p className="mt-0.5 text-caption text-slate-500">{active.address}</p>
+                )}
                 <p className="mt-1 text-body-small font-semibold text-teal-700">
-                  {formatNumber(active.capacity, { maximumFractionDigits: 1 })} kW installed capacity
+                  {formatNumber(active.capacity, { maximumFractionDigits: 2 })} kW installed capacity
                 </p>
-                <p className="mt-1 text-caption text-slate-500">
-                  {Number(active.lat).toFixed(4)}°N, {Math.abs(Number(active.lng)).toFixed(4)}°W
+                {active.annualOutput > 0 && (
+                  <p className="text-caption text-slate-500">
+                    {formatNumber(active.annualOutput, { maximumFractionDigits: 0 })} kWh/year estimated output
+                  </p>
+                )}
+                <p className="mt-1 text-caption text-slate-400">
+                  {Number(active.lat).toFixed(5)}°N, {Math.abs(Number(active.lng)).toFixed(5)}°W
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">

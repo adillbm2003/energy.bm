@@ -799,6 +799,7 @@ app.get('/api/solar/installations', (req, res) => {
     const filePath = path.join(__dirname, 'portal', 'public', 'documents', 'Solar Panel Application 2019-now.xlsx');
     if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Solar data file not found' });
 
+    // Parish centroids used only as fallback when Excel has no lat/lon columns
     const PARISH_COORDS = {
       'Paget': [32.2752, -64.7743],
       'Warwick': [32.2648, -64.7930],
@@ -826,31 +827,63 @@ app.get('/api/solar/installations', (req, res) => {
 
     raw.forEach(row => {
       const status = (row['Permit Status'] || '').trim();
-      if (!ACTIVE_STATUSES.has(status)) return;
+
+      // ── Real coordinates: try every likely column name variant ────────────
+      const rawLat = row['lat'] ?? row['Lat'] ?? row['latitude'] ?? row['Latitude'] ?? '';
+      const rawLng = row['lon'] ?? row['Lon'] ?? row['lng'] ?? row['Lng'] ??
+                     row['longitude'] ?? row['Longitude'] ?? '';
+      const parsedLat = parseFloat(rawLat);
+      const parsedLng = parseFloat(rawLng);
+      const hasRealCoords = Number.isFinite(parsedLat) && Number.isFinite(parsedLng) &&
+                            parsedLat !== 0 && parsedLng !== 0;
+
+      // Row with real coordinates: always include (user explicitly geocoded it).
+      // Row without real coordinates: only include if permit is active.
+      if (!hasRealCoords && !ACTIVE_STATUSES.has(status)) return;
 
       const parish = (row['Permit District'] || 'Bermuda').trim();
-      const coords = PARISH_COORDS[parish] || PARISH_COORDS['Bermuda'];
-      const lat = coords[0] + Math.sin(index * 7.3) * 0.003;
-      const lng = coords[1] + Math.cos(index * 5.1) * 0.003;
+      let lat, lng;
+      if (hasRealCoords) {
+        lat = parsedLat;
+        lng = parsedLng;
+      } else {
+        const coords = PARISH_COORDS[parish] || PARISH_COORDS['Bermuda'];
+        lat = coords[0] + Math.sin(index * 7.3) * 0.003;
+        lng = coords[1] + Math.cos(index * 5.1) * 0.003;
+      }
 
+      // ── Capacity: dedicated column wins over description regex ────────────
+      const rawCap = row['Extracted AC Capacity'] ?? row['AC Capacity'] ??
+                     row['AC Capacity (kW)'] ?? row['Capacity (kW)'] ?? row['Capacity'] ?? '';
+      const parsedCap = parseFloat(rawCap);
       const desc = (row['Permit Description'] || '').toString();
-      const kwMatch = desc.match(/(\d+\.?\d*)\s*kw/i);
-      const capacity = kwMatch ? parseFloat(kwMatch[1]) : 0;
+      let capacity;
+      if (Number.isFinite(parsedCap) && parsedCap > 0) {
+        capacity = parsedCap;
+      } else {
+        const kwMatch = desc.match(/(\d+\.?\d*)\s*kw/i);
+        capacity = kwMatch ? parseFloat(kwMatch[1]) : 0;
+      }
 
       const wc = (row['Permit Work Class'] || '').trim().toLowerCase();
       const type = wc.includes('commercial') ? 'Commercial' : 'Residential';
 
-      const address = (row['Permit Address'] || row['Address'] || '').toString().trim();
+      // Address: try enriched column first (user-supplied), then permit columns
+      const address = (row['Adresss'] || row['Address'] || row['Permit Address'] || '').toString().trim();
       const firstLine = address.split(/[\n\r,]/)[0].trim();
 
+      const permitNo = row['Permit Number'] || row['Permit No'] || row['PermitNumber'] || '';
+
       installations.push({
-        id: String(row['Permit Number'] || row['Permit No'] || row['PermitNumber'] || `solar-${index}`),
+        id: permitNo ? String(permitNo) : `solar-${index}`,
         name: firstLine || `Permit ${index + 1}`,
         parish,
         capacity,
         type,
-        status,
+        status: status || 'Unknown',
         description: desc.slice(0, 120),
+        address: address.slice(0, 200),
+        annualOutput: parseFloat(row['Annual Output (kWh)'] || row['Annual Output'] || 0) || 0,
         lat,
         lng,
       });
