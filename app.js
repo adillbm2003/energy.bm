@@ -558,197 +558,261 @@ function openNewsForm(id = null) {
   if (id) { item = db.news.find(n => n.id === id) || item; modalTitle.textContent = 'Edit News Article'; }
   else { modalTitle.textContent = 'Create News Article'; }
 
-  const att = item.attachment_url || item.attachmentUrl || '';
+  const att     = item.attachment_url || item.attachmentUrl || '';
   const attName = item.attachment_name || item.attachmentName || '';
   const showDoc = !!att;
-  const tabBase = 'padding:0.5rem 1.25rem;font-size:0.875rem;font-weight:600;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:#64748b;transition:all 0.15s;';
-  const tabActive = 'padding:0.5rem 1.25rem;font-size:0.875rem;font-weight:600;border:none;background:none;cursor:pointer;border-bottom:3px solid #0ea5e9;color:#0ea5e9;transition:all 0.15s;';
 
-  // Store state on window to avoid closure issues
-  window._newsFormState = { attachmentUrl: att, attachmentName: attName, imageUrl: item.image || '' };
+  // Track state outside DOM entirely
+  window._nfs = { id: id || null, att, attName };
 
+  // ── Build HTML with NO values in attributes (set via JS below) ──────────────
   modalBody.innerHTML = `
-    <form id=”news-form” onsubmit=”return false;”>
-      <!-- hidden id stored in JS, not DOM to avoid CSS showing it -->
-
+    <div id=”news-form-inner”>
       <!-- TAB BAR -->
-      <div style=”display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-bottom:1.25rem;”>
-        <button type=”button” id=”ntab-manual” style=”${showDoc ? tabBase : tabActive}” onclick=”newsTabSwitch('manual')”>✏️ Write Manually</button>
-        <button type=”button” id=”ntab-doc” style=”${showDoc ? tabActive : tabBase}” onclick=”newsTabSwitch('doc')”>📎 Attach Document (PDF / DOC)</button>
+      <div style=”display:flex;border-bottom:2px solid #e2e8f0;margin-bottom:1.25rem;”>
+        <button type=”button” id=”ntab-manual” onclick=”nfTab('manual')”
+          style=”padding:0.5rem 1.1rem;font-size:0.875rem;font-weight:600;border:none;background:none;cursor:pointer;border-bottom:3px solid #0ea5e9;color:#0ea5e9;margin-bottom:-2px;”>
+          ✏️ Write Manually
+        </button>
+        <button type=”button” id=”ntab-doc” onclick=”nfTab('doc')”
+          style=”padding:0.5rem 1.1rem;font-size:0.875rem;font-weight:600;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:#64748b;margin-bottom:-2px;”>
+          📎 Attach Document (PDF / DOC)
+        </button>
       </div>
 
       <!-- SHARED FIELDS -->
       <div class=”form-group”>
         <label>Article Title *</label>
-        <input type=”text” id=”nf-title” value=”${escapeHTML(item.title)}” required placeholder=”e.g. Department of Energy Announces Solar Grant”>
+        <input type=”text” id=”nf-title” placeholder=”e.g. Department of Energy Announces Solar Grant” autocomplete=”off”>
       </div>
       <div class=”form-group”>
         <label>Brief Summary *</label>
-        <input type=”text” id=”nf-summary” value=”${escapeHTML(item.summary || item.excerpt || '')}” required placeholder=”Short summary shown on news cards and homepage”>
+        <input type=”text” id=”nf-summary” placeholder=”Short summary shown on news cards and homepage” autocomplete=”off”>
       </div>
       <div class=”form-row”>
         <div class=”form-group”>
           <label>Category</label>
           <select id=”nf-category”>
-            <option value=”Renewable Energy” ${(item.category||'Renewable Energy')==='Renewable Energy'?'selected':''}>Renewable Energy</option>
-            <option value=”Events” ${item.category==='Events'?'selected':''}>Events</option>
-            <option value=”Policy” ${item.category==='Policy'?'selected':''}>Policy</option>
-            <option value=”Education” ${item.category==='Education'?'selected':''}>Education</option>
-            <option value=”GIS & Data” ${item.category==='GIS & Data'?'selected':''}>GIS &amp; Data</option>
-            <option value=”Announcement” ${item.category==='Announcement'?'selected':''}>Announcement</option>
+            <option value=”Renewable Energy”>Renewable Energy</option>
+            <option value=”Events”>Events</option>
+            <option value=”Policy”>Policy</option>
+            <option value=”Education”>Education</option>
+            <option value=”GIS &amp; Data”>GIS &amp; Data</option>
+            <option value=”Announcement”>Announcement</option>
           </select>
         </div>
         <div class=”form-group”>
           <label>Publish Date *</label>
-          <input type=”date” id=”nf-date” value=”${item.publishDate || item.publish_date || ''}” required>
+          <input type=”date” id=”nf-date”>
         </div>
       </div>
       <div class=”form-row”>
         <div class=”form-group”>
           <label>Status</label>
           <select id=”nf-status”>
-            <option value=”Draft” ${item.status==='Draft'?'selected':''}>Draft (hidden)</option>
-            <option value=”Published” ${item.status==='Published'?'selected':''}>Published</option>
-            <option value=”Scheduled” ${item.status==='Scheduled'?'selected':''}>Scheduled</option>
+            <option value=”Draft”>Draft (hidden)</option>
+            <option value=”Published”>Published</option>
+            <option value=”Scheduled”>Scheduled</option>
           </select>
         </div>
-        <div class=”form-group” style=”display:flex;align-items:center;gap:0.5rem;margin-top:1.75rem;”>
-          <input type=”checkbox” id=”nf-featured” ${item.featured!==false?'checked':''} style=”width:auto;margin:0;”>
-          <label for=”nf-featured” style=”margin:0;cursor:pointer;”>Featured (show on Homepage)</label>
+        <div class=”form-group” style=”display:flex;align-items:center;gap:0.5rem;padding-top:1.75rem;”>
+          <label style=”display:flex;align-items:center;gap:0.5rem;margin:0;cursor:pointer;font-weight:normal;”>
+            <input type=”checkbox” id=”nf-featured” style=”display:inline-block;width:16px;height:16px;flex-shrink:0;margin:0;”>
+            Featured (show on Homepage)
+          </label>
         </div>
       </div>
 
       <!-- WRITE MANUALLY PANEL -->
-      <div id=”npanel-manual” style=”display:${showDoc?'none':'block'};”>
+      <div id=”npanel-manual”>
         <div class=”form-group”>
           <label>Article Content</label>
-          <textarea id=”nf-content” rows=”7” placeholder=”Write the full article here. Separate paragraphs with a blank line.”>${escapeHTML(item.content || '')}</textarea>
+          <textarea id=”nf-content” rows=”7” placeholder=”Write the full article here. Separate paragraphs with a blank line (press Enter twice).”></textarea>
         </div>
       </div>
 
-      <!-- ATTACH DOCUMENT PANEL -->
-      <div id=”npanel-doc” style=”display:${showDoc?'block':'none'};”>
-        <p style=”font-size:0.85rem;color:#64748b;margin:0 0 0.75rem;”>Attach a PDF or Word document. Readers can download it from the article page. Perfect for monthly updates.</p>
-        <div id=”ndoc-dropzone” style=”border:2px dashed #cbd5e1;border-radius:8px;padding:2rem 1rem;text-align:center;cursor:pointer;background:#f8fafc;transition:border-color 0.2s;” onclick=”document.getElementById('ndoc-file-input').click()” ondragover=”event.preventDefault();this.style.borderColor='#0ea5e9';” ondragleave=”this.style.borderColor='#cbd5e1';” ondrop=”newsDocDrop(event)”>
-          <svg viewBox=”0 0 24 24” width=”36” height=”36” fill=”none” stroke=”#94a3b8” stroke-width=”1.5” style=”margin:0 auto 0.5rem;display:block;”><path d=”M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z”/><polyline points=”14 2 14 8 20 8”/><line x1=”12” y1=”18” x2=”12” y2=”12”/><polyline points=”9 15 12 18 15 15”/></svg>
-          <p style=”font-weight:600;color:#1e293b;margin:0;”>Click to browse or drag &amp; drop</p>
-          <p style=”font-size:0.78rem;color:#64748b;margin:0.2rem 0 0;”>PDF, DOC, DOCX — up to 20 MB</p>
-          <input type=”file” id=”ndoc-file-input” accept=”.pdf,.doc,.docx” style=”display:none;” onchange=”newsDocUpload(this)”>
+      <!-- ATTACH DOCUMENT PANEL (hidden by default unless editing article with existing attachment) -->
+      <div id=”npanel-doc” style=”display:none;”>
+        <p style=”font-size:0.85rem;color:#64748b;margin:0 0 1rem;”>
+          Upload a PDF or Word document. It will be attached to the article and readers can download it directly from the article page.
+          Perfect for monthly energy updates and reports.
+        </p>
+        <div id=”ndoc-dropzone”
+          style=”border:2px dashed #cbd5e1;border-radius:8px;padding:2rem 1rem;text-align:center;cursor:pointer;background:#f8fafc;”
+          onclick=”document.getElementById('ndoc-file-pick').click()”
+          ondragover=”event.preventDefault();this.style.borderColor='#0ea5e9';”
+          ondragleave=”this.style.borderColor='#cbd5e1';”
+          ondrop=”nfDocDrop(event)”>
+          <svg viewBox=”0 0 24 24” width=”36” height=”36” fill=”none” stroke=”#94a3b8” stroke-width=”1.5”
+            style=”display:block;margin:0 auto 0.5rem;”>
+            <path d=”M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z”/>
+            <polyline points=”14 2 14 8 20 8”/>
+            <line x1=”12” y1=”18” x2=”12” y2=”12”/><polyline points=”9 15 12 18 15 15”/>
+          </svg>
+          <p id=”ndoc-dz-text” style=”font-weight:600;color:#1e293b;margin:0;”>Click to browse or drag &amp; drop</p>
+          <p style=”font-size:0.78rem;color:#64748b;margin:0.25rem 0 0;”>PDF, DOC, DOCX — up to 20 MB</p>
+          <input type=”file” id=”ndoc-file-pick” accept=”.pdf,.doc,.docx” style=”display:none;” onchange=”nfDocUpload(this)”>
         </div>
-        <div id=”ndoc-attached” style=”display:${att?'flex':'none'};align-items:center;gap:0.75rem;margin-top:0.75rem;padding:0.75rem 1rem;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;”>
-          <svg viewBox=”0 0 24 24” width=”26” height=”26” fill=”none” stroke=”#16a34a” stroke-width=”1.5”><path d=”M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z”/><polyline points=”14 2 14 8 20 8”/></svg>
+        <div id=”ndoc-attached”
+          style=”display:none;align-items:center;gap:0.75rem;margin-top:0.75rem;padding:0.75rem 1rem;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;”>
+          <svg viewBox=”0 0 24 24” width=”26” height=”26” fill=”none” stroke=”#16a34a” stroke-width=”1.5”>
+            <path d=”M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z”/>
+            <polyline points=”14 2 14 8 20 8”/>
+          </svg>
           <div style=”flex:1;min-width:0;”>
-            <p style=”margin:0;font-weight:600;font-size:0.875rem;” id=”ndoc-name”>${escapeHTML(attName||'Attached document')}</p>
-            <a id=”ndoc-link” href=”${escapeHTML(att)}” target=”_blank” style=”font-size:0.75rem;color:#0d9488;”>${att ? 'View file' : ''}</a>
+            <p id=”ndoc-fname” style=”margin:0;font-weight:600;font-size:0.875rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;”></p>
+            <a id=”ndoc-flink” href=”#” target=”_blank” rel=”noopener” style=”font-size:0.75rem;color:#0d9488;”>View uploaded file</a>
           </div>
-          <button type=”button” onclick=”newsDocRemove()” style=”background:none;border:none;cursor:pointer;color:#ef4444;font-size:1.2rem;line-height:1;” title=”Remove”>×</button>
+          <button type=”button” onclick=”nfDocRemove()”
+            style=”background:none;border:none;cursor:pointer;color:#ef4444;font-size:1.4rem;line-height:1;padding:0 0.25rem;”>×</button>
         </div>
-        <p style=”font-size:0.75rem;color:#64748b;margin-top:0.5rem;”>💡 Monthly tip: use the <strong>Duplicate</strong> button on any article in the list to copy it, then just swap the date and upload the new month's file.</p>
+        <p style=”font-size:0.75rem;color:#94a3b8;margin-top:0.5rem;”>
+          💡 <strong>Monthly workflow:</strong> duplicate a previous article (copy icon in the list), update the title &amp; date, then upload the new file here.
+        </p>
       </div>
 
-      <!-- IMAGE UPLOAD (always shown, outside panels) -->
+      <!-- FEATURED PHOTO — always visible, below both panels -->
       <div class=”form-group” style=”margin-top:1rem;padding-top:1rem;border-top:1px solid #e2e8f0;”>
-        <label>Featured Photo</label>
-        <input type=”text” id=”nf-image” value=”${escapeHTML(item.image||'')}” placeholder=”/images/events/photo.jpg  or  https://...”>
-        <input type=”file” id=”nf-image-file” accept=”image/jpeg,image/png,image/webp” style=”display:none;” onchange=”newsImageUpload(this)”>
-        <div class=”file-upload-mock” style=”margin-top:0.4rem;padding:0.6rem;cursor:pointer;” onclick=”document.getElementById('nf-image-file').click()”>
-          <p id=”nf-image-status”>📸 Click to upload photo (JPG, PNG, WEBP)</p>
+        <label>Featured Photo <span style=”font-weight:normal;color:#94a3b8;”>(optional)</span></label>
+        <input type=”text” id=”nf-image” placeholder=”https://... or /images/events/photo.jpg”>
+        <input type=”file” id=”nf-img-pick” accept=”.jpg,.jpeg,.png,.webp” style=”display:none;” onchange=”nfImgUpload(this)”>
+        <div id=”nf-img-btn”
+          style=”margin-top:0.4rem;padding:0.65rem 1rem;border:1px dashed #cbd5e1;border-radius:6px;cursor:pointer;font-size:0.85rem;color:#64748b;text-align:center;”
+          onclick=”document.getElementById('nf-img-pick').click()”>
+          <span id=”nf-img-status”>📸 Click to upload photo (JPG, PNG, WEBP)</span>
         </div>
       </div>
-    </form>`;
+    </div>`;
 
-  // --- Tab switch ---
-  window.newsTabSwitch = function(tab) {
-    const tabBase2 = 'padding:0.5rem 1.25rem;font-size:0.875rem;font-weight:600;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;color:#64748b;transition:all 0.15s;';
-    const tabActive2 = 'padding:0.5rem 1.25rem;font-size:0.875rem;font-weight:600;border:none;background:none;cursor:pointer;border-bottom:3px solid #0ea5e9;color:#0ea5e9;transition:all 0.15s;';
-    document.getElementById('npanel-manual').style.display = tab === 'manual' ? 'block' : 'none';
-    document.getElementById('npanel-doc').style.display = tab === 'doc' ? 'block' : 'none';
-    document.getElementById('ntab-manual').style.cssText = tab === 'manual' ? tabActive2 : tabBase2;
-    document.getElementById('ntab-doc').style.cssText = tab === 'doc' ? tabActive2 : tabBase2;
+  // ── Populate fields via JS (no HTML attribute escaping) ──────────────────────
+  document.getElementById('nf-title').value   = item.title || '';
+  document.getElementById('nf-summary').value = item.summary || item.excerpt || '';
+  document.getElementById('nf-content').value = Array.isArray(item.content)
+    ? item.content.join('\n\n') : (item.content || '');
+  document.getElementById('nf-date').value    = item.publishDate || item.publish_date || '';
+  document.getElementById('nf-image').value   = item.image || '';
+  document.getElementById('nf-featured').checked = item.featured !== false;
+
+  // Set select values
+  const catSel = document.getElementById('nf-category');
+  const cat = item.category || 'Renewable Energy';
+  for (let o of catSel.options) if (o.value === cat) { o.selected = true; break; }
+
+  const stSel = document.getElementById('nf-status');
+  for (let o of stSel.options) if (o.value === (item.status || 'Draft')) { o.selected = true; break; }
+
+  // Restore attachment state if editing an article with a doc
+  if (att) {
+    document.getElementById('ndoc-fname').textContent = attName || 'Attached document';
+    document.getElementById('ndoc-flink').href = att;
+    document.getElementById('ndoc-attached').style.display = 'flex';
+    nfTab('doc');
+  } else {
+    nfTab('manual');
+  }
+
+  // ── Tab switching ────────────────────────────────────────────────────────────
+  window.nfTab = function(tab) {
+    const manualOn = tab === 'manual';
+    const manEl = document.getElementById('npanel-manual');
+    const docEl = document.getElementById('npanel-doc');
+    if (manEl) manEl.style.display = manualOn ? 'block' : 'none';
+    if (docEl) docEl.style.display = manualOn ? 'none' : 'block';
+    const tMan = document.getElementById('ntab-manual');
+    const tDoc = document.getElementById('ntab-doc');
+    if (tMan) { tMan.style.borderBottomColor = manualOn ? '#0ea5e9' : 'transparent'; tMan.style.color = manualOn ? '#0ea5e9' : '#64748b'; }
+    if (tDoc) { tDoc.style.borderBottomColor = manualOn ? 'transparent' : '#0ea5e9'; tDoc.style.color = manualOn ? '#64748b' : '#0ea5e9'; }
   };
 
-  // --- Document upload ---
-  window.newsDocUpload = async function(input) {
+  // ── Document upload ──────────────────────────────────────────────────────────
+  window.nfDocUpload = async function(input) {
     const file = input && input.files && input.files[0];
     if (!file) return;
-    const dz = document.getElementById('ndoc-dropzone');
+    const dzText = document.getElementById('ndoc-dz-text');
+    const dz     = document.getElementById('ndoc-dropzone');
     dz.style.borderColor = '#0ea5e9';
-    dz.querySelector('p').textContent = 'Uploading…';
-    const fd = new FormData(); fd.append('file', file);
+    if (dzText) dzText.textContent = 'Uploading…';
+    const fd = new FormData();
+    fd.append('file', file);
     try {
-      const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: fd });
+      const res  = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: fd });
       const data = await res.json();
-      if (!res.ok) { alert('Upload failed: ' + (data.error || res.status)); return; }
+      if (!res.ok) { alert('Upload failed: ' + (data.error || 'Server error ' + res.status)); dz.style.borderColor = '#fca5a5'; return; }
       const url = data.url || '';
-      window._newsFormState.attachmentUrl = url;
-      window._newsFormState.attachmentName = file.name;
-      document.getElementById('ndoc-name').textContent = file.name;
-      document.getElementById('ndoc-link').href = url;
-      document.getElementById('ndoc-link').textContent = 'View file';
+      window._nfs.att     = url;
+      window._nfs.attName = file.name;
+      document.getElementById('ndoc-fname').textContent = file.name;
+      document.getElementById('ndoc-flink').href = url;
       document.getElementById('ndoc-attached').style.display = 'flex';
       dz.style.borderColor = '#86efac';
-      dz.querySelector('p').textContent = '✓ Uploaded — click to replace';
-      if (!document.getElementById('nf-title').value) {
+      if (dzText) dzText.textContent = '✓ Uploaded! Click to replace';
+      if (!document.getElementById('nf-title').value.trim()) {
         document.getElementById('nf-title').value = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
       }
-    } catch(e) { alert('Upload error: ' + e.message); }
-    if (input.value !== undefined) input.value = '';
+    } catch(e) {
+      alert('Upload error: ' + e.message);
+      dz.style.borderColor = '#fca5a5';
+    }
+    if (input && 'value' in input) input.value = '';
   };
 
-  window.newsDocDrop = async function(e) {
+  window.nfDocDrop = async function(e) {
     e.preventDefault();
-    document.getElementById('ndoc-dropzone').style.borderColor = '#cbd5e1';
-    const file = e.dataTransfer.files[0];
+    const dz = document.getElementById('ndoc-dropzone');
+    if (dz) dz.style.borderColor = '#cbd5e1';
+    const file = e.dataTransfer && e.dataTransfer.files[0];
     if (!file) return;
-    await newsDocUpload({ files: [file] });
+    await nfDocUpload({ files: [file] });
   };
 
-  window.newsDocRemove = function() {
-    window._newsFormState.attachmentUrl = '';
-    window._newsFormState.attachmentName = '';
+  window.nfDocRemove = function() {
+    window._nfs.att = '';
+    window._nfs.attName = '';
     document.getElementById('ndoc-attached').style.display = 'none';
     const dz = document.getElementById('ndoc-dropzone');
-    dz.style.borderColor = '#cbd5e1';
-    dz.querySelector('p').textContent = 'Click to browse or drag & drop';
+    const dzText = document.getElementById('ndoc-dz-text');
+    if (dz) dz.style.borderColor = '#cbd5e1';
+    if (dzText) dzText.textContent = 'Click to browse or drag & drop';
   };
 
-  // --- Image upload ---
-  window.newsImageUpload = async function(input) {
+  // ── Image upload ─────────────────────────────────────────────────────────────
+  window.nfImgUpload = async function(input) {
     const file = input && input.files && input.files[0];
     if (!file) return;
-    const status = document.getElementById('nf-image-status');
-    status.textContent = 'Uploading photo…';
-    const fd = new FormData(); fd.append('file', file);
+    const status = document.getElementById('nf-img-status');
+    if (status) status.textContent = 'Uploading…';
+    const fd = new FormData();
+    fd.append('file', file);
     try {
-      const res = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: fd });
+      const res  = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: fd });
       const data = await res.json();
-      if (!res.ok) { alert('Photo upload failed: ' + (data.error || res.status)); return; }
+      if (!res.ok) { alert('Photo upload failed: ' + (data.error || 'Server error ' + res.status)); return; }
       document.getElementById('nf-image').value = data.url || '';
-      window._newsFormState.imageUrl = data.url || '';
-      status.innerHTML = '<span style=”color:#059669;font-weight:600;”>✓ Photo uploaded: ' + escapeHTML(file.name) + '</span>';
-    } catch(e) { alert('Upload error: ' + e.message); }
-    if (input.value !== undefined) input.value = '';
+      if (status) status.innerHTML = '<span style=”color:#059669;font-weight:600;”>✓ ' + escapeHTML(file.name) + ' uploaded</span>';
+    } catch(e) {
+      alert('Upload error: ' + e.message);
+    }
+    if (input && 'value' in input) input.value = '';
   };
 
-  // --- Save ---
+  // ── Save handler ─────────────────────────────────────────────────────────────
   const saveBtn = modal.querySelector('#modal-save-btn');
   saveBtn.textContent = id ? 'Save Changes' : 'Publish Article';
   saveBtn.onclick = async () => {
-    const title = document.getElementById('nf-title').value.trim();
-    const summary = document.getElementById('nf-summary').value.trim();
-    const pubDate = document.getElementById('nf-date').value;
-    if (!title) { alert('Article title is required'); document.getElementById('nf-title').focus(); return; }
-    if (!summary) { alert('Brief summary is required'); document.getElementById('nf-summary').focus(); return; }
-    if (!pubDate) { alert('Publish date is required'); return; }
+    const title   = (document.getElementById('nf-title').value || '').trim();
+    const summary = (document.getElementById('nf-summary').value || '').trim();
+    const pubDate = (document.getElementById('nf-date').value || '').trim();
+    if (!title)   { alert('Article title is required.'); document.getElementById('nf-title').focus(); return; }
+    if (!summary) { alert('Brief summary is required.');  document.getElementById('nf-summary').focus(); return; }
+    if (!pubDate) { alert('Publish date is required.');   return; }
     let status = document.getElementById('nf-status').value;
     if (pubDate && isFutureDate(pubDate)) status = 'Scheduled';
-    const imageUrl = document.getElementById('nf-image').value.trim() || window._newsFormState.imageUrl || '';
     const article = {
       title,
       summary,
       excerpt: summary,
       content: (document.getElementById('nf-content') || {}).value || '',
-      image: imageUrl,
+      image:   (document.getElementById('nf-image').value || '').trim(),
       publishDate: pubDate,
       publish_date: pubDate,
       scheduledPublishDate: status === 'Scheduled' ? pubDate : null,
@@ -757,17 +821,17 @@ function openNewsForm(id = null) {
       modifiedBy: currentUser?.username || 'CMS Editor',
       category: document.getElementById('nf-category').value,
       featured: document.getElementById('nf-featured').checked,
-      attachment_url: window._newsFormState.attachmentUrl || '',
-      attachment_name: window._newsFormState.attachmentName || '',
+      attachment_url:  window._nfs.att || '',
+      attachment_name: window._nfs.attName || '',
     };
     try {
-      const url = id ? `/api/news/${id}` : '/api/news';
+      const apiUrl = id ? `/api/news/${id}` : '/api/news';
       const method = id ? 'PUT' : 'POST';
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(article) });
+      const res    = await fetch(apiUrl, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(article) });
       const result = await res.json();
       if (result.success) { closeModal(); switchView('news'); }
       else { alert('Error saving: ' + (result.error || 'Unknown error')); }
-    } catch (e) { alert('Network error: ' + e.message); }
+    } catch(e) { alert('Network error: ' + e.message); }
   };
 
   openModal();
