@@ -639,7 +639,7 @@ function openNewsForm(id = null) {
         </p>
         <div id=”ndoc-dropzone”
           style=”border:2px dashed #cbd5e1;border-radius:8px;padding:2rem 1rem;text-align:center;cursor:pointer;background:#f8fafc;”
-          onclick=”document.getElementById('ndoc-file-pick').click()”
+          onclick=”nfDocPick()”
           ondragover=”event.preventDefault();this.style.borderColor='#0ea5e9';”
           ondragleave=”this.style.borderColor='#cbd5e1';”
           ondrop=”nfDocDrop(event)”>
@@ -678,47 +678,51 @@ function openNewsForm(id = null) {
         <input type=”file” id=”nf-img-pick” accept=”.jpg,.jpeg,.png,.webp” style=”display:none;” onchange=”nfImgUpload(this)”>
         <div id=”nf-img-btn”
           style=”margin-top:0.4rem;padding:0.65rem 1rem;border:1px dashed #cbd5e1;border-radius:6px;cursor:pointer;font-size:0.85rem;color:#64748b;text-align:center;”
-          onclick=”document.getElementById('nf-img-pick').click()”>
+          onclick=”nfImgPick()”>
           <span id=”nf-img-status”>📸 Click to upload photo (JPG, PNG, WEBP)</span>
         </div>
       </div>
     </div>`;
 
+  // helper: query within modal body (avoids document.getElementById which can fail
+  // when elements are injected via innerHTML in certain browser/CSP contexts)
+  const q = (sel) => modalBody.querySelector(sel);
+
   // ── Populate fields via JS (no HTML attribute escaping) ──────────────────────
-  document.getElementById('nf-title').value   = item.title || '';
-  document.getElementById('nf-summary').value = item.summary || item.excerpt || '';
-  document.getElementById('nf-content').value = Array.isArray(item.content)
+  q('#nf-title').value   = item.title || '';
+  q('#nf-summary').value = item.summary || item.excerpt || '';
+  q('#nf-content').value = Array.isArray(item.content)
     ? item.content.join('\n\n') : (item.content || '');
-  document.getElementById('nf-date').value    = item.publishDate || item.publish_date || '';
-  document.getElementById('nf-image').value   = item.image || '';
-  document.getElementById('nf-featured').checked = item.featured !== false;
+  q('#nf-date').value  = item.publishDate || item.publish_date || '';
+  q('#nf-image').value = item.image || '';
+  q('#nf-featured').checked = item.featured !== false;
 
   // Set select values
-  const catSel = document.getElementById('nf-category');
+  const catSel = q('#nf-category');
   const cat = item.category || 'Renewable Energy';
   for (let o of catSel.options) if (o.value === cat) { o.selected = true; break; }
 
-  const stSel = document.getElementById('nf-status');
+  const stSel = q('#nf-status');
   for (let o of stSel.options) if (o.value === (item.status || 'Draft')) { o.selected = true; break; }
 
   // ── Tab switching ────────────────────────────────────────────────────────────
   window.nfTab = function(tab) {
     const manualOn = tab === 'manual';
-    const manEl = document.getElementById('npanel-manual');
-    const docEl = document.getElementById('npanel-doc');
+    const manEl = q('#npanel-manual');
+    const docEl = q('#npanel-doc');
     if (manEl) manEl.style.display = manualOn ? 'block' : 'none';
     if (docEl) docEl.style.display = manualOn ? 'none' : 'block';
-    const tMan = document.getElementById('ntab-manual');
-    const tDoc = document.getElementById('ntab-doc');
+    const tMan = q('#ntab-manual');
+    const tDoc = q('#ntab-doc');
     if (tMan) { tMan.style.borderBottomColor = manualOn ? '#0ea5e9' : 'transparent'; tMan.style.color = manualOn ? '#0ea5e9' : '#64748b'; }
     if (tDoc) { tDoc.style.borderBottomColor = manualOn ? 'transparent' : '#0ea5e9'; tDoc.style.color = manualOn ? '#64748b' : '#0ea5e9'; }
   };
 
   // ── Restore initial state (AFTER nfTab is defined) ───────────────────────────
   if (att) {
-    document.getElementById('ndoc-fname').textContent = attName || 'Attached document';
-    document.getElementById('ndoc-flink').href = att;
-    document.getElementById('ndoc-attached').style.display = 'flex';
+    const fname = q('#ndoc-fname'); if (fname) fname.textContent = attName || 'Attached document';
+    const flink = q('#ndoc-flink'); if (flink) flink.href = att;
+    const attached = q('#ndoc-attached'); if (attached) attached.style.display = 'flex';
     window.nfTab('doc');
   } else {
     window.nfTab('manual');
@@ -728,37 +732,41 @@ function openNewsForm(id = null) {
   window.nfDocUpload = async function(input) {
     const file = input && input.files && input.files[0];
     if (!file) return;
-    const dzText = document.getElementById('ndoc-dz-text');
-    const dz     = document.getElementById('ndoc-dropzone');
-    dz.style.borderColor = '#0ea5e9';
+    const dzText = q('#ndoc-dz-text');
+    const dz     = q('#ndoc-dropzone');
+    if (dz) dz.style.borderColor = '#0ea5e9';
     if (dzText) dzText.textContent = 'Uploading…';
     const fd = new FormData();
     fd.append('file', file);
     try {
       const res  = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: fd });
       const data = await res.json();
-      if (!res.ok) { alert('Upload failed: ' + (data.error || 'Server error ' + res.status)); dz.style.borderColor = '#fca5a5'; return; }
+      if (!res.ok) { alert('Upload failed: ' + (data.error || 'Server error ' + res.status)); if (dz) dz.style.borderColor = '#fca5a5'; return; }
       const url = data.url || '';
       window._nfs.att     = url;
       window._nfs.attName = file.name;
-      document.getElementById('ndoc-fname').textContent = file.name;
-      document.getElementById('ndoc-flink').href = url;
-      document.getElementById('ndoc-attached').style.display = 'flex';
-      dz.style.borderColor = '#86efac';
+      const fname = q('#ndoc-fname'); if (fname) fname.textContent = file.name;
+      const flink = q('#ndoc-flink'); if (flink) { flink.href = url; flink.textContent = 'View file'; }
+      const attached = q('#ndoc-attached'); if (attached) attached.style.display = 'flex';
+      if (dz) dz.style.borderColor = '#86efac';
       if (dzText) dzText.textContent = '✓ Uploaded! Click to replace';
-      if (!document.getElementById('nf-title').value.trim()) {
-        document.getElementById('nf-title').value = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+      const titleEl = q('#nf-title');
+      if (titleEl && !titleEl.value.trim()) {
+        titleEl.value = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
       }
     } catch(e) {
       alert('Upload error: ' + e.message);
-      dz.style.borderColor = '#fca5a5';
+      if (dz) dz.style.borderColor = '#fca5a5';
     }
     if (input && 'value' in input) input.value = '';
   };
 
+  window.nfDocPick = function() { const el = q('#ndoc-file-pick'); if (el) el.click(); };
+  window.nfImgPick  = function() { const el = q('#nf-img-pick');   if (el) el.click(); };
+
   window.nfDocDrop = async function(e) {
     e.preventDefault();
-    const dz = document.getElementById('ndoc-dropzone');
+    const dz = q('#ndoc-dropzone');
     if (dz) dz.style.borderColor = '#cbd5e1';
     const file = e.dataTransfer && e.dataTransfer.files[0];
     if (!file) return;
@@ -768,9 +776,9 @@ function openNewsForm(id = null) {
   window.nfDocRemove = function() {
     window._nfs.att = '';
     window._nfs.attName = '';
-    document.getElementById('ndoc-attached').style.display = 'none';
-    const dz = document.getElementById('ndoc-dropzone');
-    const dzText = document.getElementById('ndoc-dz-text');
+    const attached = q('#ndoc-attached'); if (attached) attached.style.display = 'none';
+    const dz = q('#ndoc-dropzone');
+    const dzText = q('#ndoc-dz-text');
     if (dz) dz.style.borderColor = '#cbd5e1';
     if (dzText) dzText.textContent = 'Click to browse or drag & drop';
   };
@@ -779,7 +787,7 @@ function openNewsForm(id = null) {
   window.nfImgUpload = async function(input) {
     const file = input && input.files && input.files[0];
     if (!file) return;
-    const status = document.getElementById('nf-img-status');
+    const status = q('#nf-img-status');
     if (status) status.textContent = 'Uploading…';
     const fd = new FormData();
     fd.append('file', file);
@@ -787,7 +795,7 @@ function openNewsForm(id = null) {
       const res  = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: fd });
       const data = await res.json();
       if (!res.ok) { alert('Photo upload failed: ' + (data.error || 'Server error ' + res.status)); return; }
-      document.getElementById('nf-image').value = data.url || '';
+      const imgEl = q('#nf-image'); if (imgEl) imgEl.value = data.url || '';
       if (status) status.innerHTML = '<span style=”color:#059669;font-weight:600;”>✓ ' + escapeHTML(file.name) + ' uploaded</span>';
     } catch(e) {
       alert('Upload error: ' + e.message);
@@ -799,28 +807,28 @@ function openNewsForm(id = null) {
   const saveBtn = modal.querySelector('#modal-save-btn');
   saveBtn.textContent = id ? 'Save Changes' : 'Publish Article';
   saveBtn.onclick = async () => {
-    const title   = (document.getElementById('nf-title').value || '').trim();
-    const summary = (document.getElementById('nf-summary').value || '').trim();
-    const pubDate = (document.getElementById('nf-date').value || '').trim();
-    if (!title)   { alert('Article title is required.'); document.getElementById('nf-title').focus(); return; }
-    if (!summary) { alert('Brief summary is required.');  document.getElementById('nf-summary').focus(); return; }
+    const title   = (q('#nf-title').value || '').trim();
+    const summary = (q('#nf-summary').value || '').trim();
+    const pubDate = (q('#nf-date').value || '').trim();
+    if (!title)   { alert('Article title is required.'); q('#nf-title').focus(); return; }
+    if (!summary) { alert('Brief summary is required.');  q('#nf-summary').focus(); return; }
     if (!pubDate) { alert('Publish date is required.');   return; }
-    let status = document.getElementById('nf-status').value;
+    let status = q('#nf-status').value;
     if (pubDate && isFutureDate(pubDate)) status = 'Scheduled';
     const article = {
       title,
       summary,
       excerpt: summary,
-      content: (document.getElementById('nf-content') || {}).value || '',
-      image:   (document.getElementById('nf-image').value || '').trim(),
+      content: (q('#nf-content') || {}).value || '',
+      image:   (q('#nf-image') ? q('#nf-image').value : '') || '',
       publishDate: pubDate,
       publish_date: pubDate,
       scheduledPublishDate: status === 'Scheduled' ? pubDate : null,
       status,
       targetSite: 'all',
       modifiedBy: currentUser?.username || 'CMS Editor',
-      category: document.getElementById('nf-category').value,
-      featured: document.getElementById('nf-featured').checked,
+      category: q('#nf-category').value,
+      featured: q('#nf-featured').checked,
       attachment_url:  window._nfs.att || '',
       attachment_name: window._nfs.attName || '',
     };
