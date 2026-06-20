@@ -701,16 +701,6 @@ function openNewsForm(id = null) {
   const stSel = document.getElementById('nf-status');
   for (let o of stSel.options) if (o.value === (item.status || 'Draft')) { o.selected = true; break; }
 
-  // Restore attachment state if editing an article with a doc
-  if (att) {
-    document.getElementById('ndoc-fname').textContent = attName || 'Attached document';
-    document.getElementById('ndoc-flink').href = att;
-    document.getElementById('ndoc-attached').style.display = 'flex';
-    nfTab('doc');
-  } else {
-    nfTab('manual');
-  }
-
   // ── Tab switching ────────────────────────────────────────────────────────────
   window.nfTab = function(tab) {
     const manualOn = tab === 'manual';
@@ -723,6 +713,16 @@ function openNewsForm(id = null) {
     if (tMan) { tMan.style.borderBottomColor = manualOn ? '#0ea5e9' : 'transparent'; tMan.style.color = manualOn ? '#0ea5e9' : '#64748b'; }
     if (tDoc) { tDoc.style.borderBottomColor = manualOn ? 'transparent' : '#0ea5e9'; tDoc.style.color = manualOn ? '#64748b' : '#0ea5e9'; }
   };
+
+  // ── Restore initial state (AFTER nfTab is defined) ───────────────────────────
+  if (att) {
+    document.getElementById('ndoc-fname').textContent = attName || 'Attached document';
+    document.getElementById('ndoc-flink').href = att;
+    document.getElementById('ndoc-attached').style.display = 'flex';
+    window.nfTab('doc');
+  } else {
+    window.nfTab('manual');
+  }
 
   // ── Document upload ──────────────────────────────────────────────────────────
   window.nfDocUpload = async function(input) {
