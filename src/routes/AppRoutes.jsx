@@ -57,7 +57,7 @@ export default function AppRoutes() {
           <Route path="projects" element={<Projects />} />
           <Route path="projects/:id" element={<ProjectDetail />} />
           <Route path="dashboard" element={<Dashboard />}>
-            <Route index element={<Navigate to={ROUTES.renewableDashboard} replace />} />
+            <Route index element={<Navigate to="renewable" replace />} />
             <Route path="renewable" element={<RenewableDashboard />} />
             <Route path="transition" element={<TransitionDashboard />} />
           </Route>

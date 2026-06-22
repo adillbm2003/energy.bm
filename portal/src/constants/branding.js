@@ -49,7 +49,21 @@ export const PAGE_IMAGES = {
   transport: base + 'images/transport.jpg',
   contact: base + 'images/bermuda.jpg',
   policy: base + 'images/consultation.jpg',
+  spaceOrbit: base + 'images/space-orbit.jpg',
+  spaceEarth: base + 'images/space-earth.jpg',
+  spaceDish: base + 'images/space-dish.jpg',
+  spaceLaunch: base + 'images/space-launch.jpg',
+  spaceInsurance: base + 'images/space-insurance.jpg',
+  spaceStrategy: base + 'images/space-strategy.jpg',
+  spaceAstronaut: base + 'images/space-astronaut.jpg',
+  spaceNightsky: base + 'images/space-nightsky.jpg',
   portrait: base + 'images/portrait.jpg',
+  portrait1: base + 'images/portraits/774909.jpg',
+  portrait2: base + 'images/portraits/91227.jpg',
+  portrait3: base + 'images/portraits/1181519.jpg',
+  portrait4: base + 'images/portraits/1181686.jpg',
+  portrait5: base + 'images/portraits/1222271.jpg',
+  portrait6: base + 'images/portraits/2379004.jpg',
 }
 
 export const IMAGE_FALLBACK = PAGE_IMAGES.solar

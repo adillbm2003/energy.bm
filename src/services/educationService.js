@@ -1,5 +1,5 @@
 import { educationResources, educationCategories } from '../data/education'
-import { fetchFromAPI, fetchMock } from './api'
+import { fetchFromAPI, fetchMock, toRelativeUrl } from './api'
 
 const INFOGRAPHIC_GUIDES = educationResources.filter(r => r.type === 'Infographic')
 
@@ -15,10 +15,10 @@ export const educationService = {
       category: item.category,
       type: item.type || 'Guide',
       description: item.description,
-      image: item.image || null,
-      downloadUrl: item.attachment || item.downloadUrl || item.pdfLink || '#',
+      image: toRelativeUrl(item.image) || null,
+      downloadUrl: toRelativeUrl(item.attachment || item.downloadUrl || item.pdfLink) || '#',
       fileSize: item.fileSize || '1.5 MB',
-      videoUrl: item.videoUrl || null,
+      videoUrl: toRelativeUrl(item.videoUrl) || null,
       duration: item.duration || null,
       relatedRoute: item.relatedRoute || null,
     }))

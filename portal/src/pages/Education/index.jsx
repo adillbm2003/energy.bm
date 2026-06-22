@@ -11,7 +11,7 @@ import { filterByField } from '../../utils/filter'
 import LoadingSpinner from '../../components/ui/LoadingSpinner'
 import SafeImage from '../../components/common/SafeImage'
 import { resolveContentImage } from '../../utils/contentImages'
-import { downloadMockDocument, isExternalUrl } from '../../utils/mockDownload'
+import { isExternalUrl } from '../../utils/mockDownload'
 
 const CATEGORIES = [
   { value: 'all', label: 'All Resources' },
@@ -22,7 +22,6 @@ const CATEGORIES = [
 function ResourceCard({ resource }) {
   const isGuide = resource.type === 'Infographic'
   const imgSrc = isGuide ? resource.image : resolveContentImage(resource.image, 'education')
-  const hasLocalFile = resource.downloadUrl && resource.downloadUrl !== '#' && !isExternalUrl(resource.downloadUrl)
 
   return (
     <article className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white card-shadow transition-all hover:-translate-y-0.5 hover:card-shadow-hover">
@@ -49,7 +48,7 @@ function ResourceCard({ resource }) {
               <Button href={resource.downloadUrl} variant="outline" size="sm" target="_blank" rel="noopener noreferrer">
                 {isGuide ? '🖼️ View Infographic' : `Download${resource.fileSize ? ` (${resource.fileSize})` : ''}`}
               </Button>
-            ) : hasLocalFile ? (
+            ) : (
               <a
                 href={resource.downloadUrl}
                 target="_blank"
@@ -58,39 +57,12 @@ function ResourceCard({ resource }) {
               >
                 {isGuide ? '🖼️ View Infographic' : `⬇ Download${resource.fileSize ? ` (${resource.fileSize})` : ''}`}
               </a>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => downloadMockDocument({ title: resource.title, summary: resource.description, category: resource.category, content: resource.content })}
-              >
-                ⬇ Download PDF
-              </Button>
             )
           )}
-          {resource.downloadUrl === '#' && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => downloadMockDocument({ title: resource.title, summary: resource.description, category: resource.category, content: resource.content })}
-            >
-              ⬇ Download PDF
+          {resource.videoUrl && isExternalUrl(resource.videoUrl) && (
+            <Button href={resource.videoUrl} variant="outline" size="sm" target="_blank" rel="noopener noreferrer">
+              ▶ Watch Video {resource.duration && `(${resource.duration})`}
             </Button>
-          )}
-          {resource.videoUrl && (
-            isExternalUrl(resource.videoUrl) ? (
-              <Button href={resource.videoUrl} variant="outline" size="sm" target="_blank" rel="noopener noreferrer">
-                ▶ Watch Video {resource.duration && `(${resource.duration})`}
-              </Button>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => downloadMockDocument({ title: resource.title, summary: resource.description, category: 'Video Transcript' })}
-              >
-                ▶ Watch Video {resource.duration && `(${resource.duration})`}
-              </Button>
-            )
           )}
         </div>
       </div>

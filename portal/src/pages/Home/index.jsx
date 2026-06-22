@@ -88,7 +88,7 @@ export default function Home() {
                 <div className="card-padding">
                   <h3>{item.title}</h3>
                   <p className="mt-2 text-body-small text-slate-600">{item.description}</p>
-                  <Button to={item.to} variant="outline" size="sm" className="mt-3">
+                  <Button to={item.to} href={item.href} target={item.href ? '_blank' : undefined} rel={item.href ? 'noopener noreferrer' : undefined} variant="outline" size="sm" className="mt-3">
                     {item.cta}
                   </Button>
                 </div>
@@ -191,7 +191,7 @@ export default function Home() {
               {dashboardHighlights.map((item, index) => {
                 const highlightImages = [
                   PAGE_IMAGES.solar,
-                  PAGE_IMAGES.solar,
+                  PAGE_IMAGES.solarRooftop,
                   PAGE_IMAGES.battery,
                   PAGE_IMAGES.wind,
                 ]
@@ -220,7 +220,7 @@ export default function Home() {
       <section className="section-padding bg-white" aria-labelledby="installers-heading">
         <div className="container-page">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-            <SectionHeading title="Registered Solar Installers" subtitle="Certified professionals for your renewable energy project" className="mb-0" />
+            <SectionHeading title="Certified PV Installers" subtitle="Registered professionals for your renewable energy project" className="mb-0" />
             <Button to={ROUTES.installers} variant="outline">View All Installers</Button>
           </div>
           <div className="flex flex-col gap-3">

@@ -1,25 +1,25 @@
-// Mock consultation data. Real data is fetched from /api/consultations.
+// Fallback consultation data. Real data is fetched from /api/consultations.
 // All consultations link to the Government Citizens Forum for submissions.
 
 export const consultations = [
   {
-    id: 'con-001',
-    title: 'Clean Energy Act Amendments 2026',
+    id: 'cons-1',
+    title: 'Space & Satellite Licensing & Fees Consultation',
     description:
-      'Proposed amendments to strengthen grid interconnection standards, community solar provisions, and installer licensing requirements.',
+      'Consultation on proposed licensing frameworks and fee structures for satellite operators and earth station facilities in Bermuda.',
     status: 'Open',
     openingDate: '2026-04-01',
-    closingDate: '2026-06-30',
+    closingDate: '2026-07-31',
     externalUrl: 'https://forum.gov.bm/en/',
   },
   {
-    id: 'con-002',
-    title: 'EV Charging Tariff Structure Review',
+    id: 'con-nesp-2026',
+    title: 'National Energy Security Policy (NESP) 2026',
     description:
-      'Review of proposed tariff structures for public electric vehicle charging to ensure equitable access and grid stability.',
-    status: 'Open',
-    openingDate: '2026-03-15',
-    closingDate: '2026-05-31',
+      'Public consultation on Bermuda\'s updated National Energy Security Policy, covering renewable energy targets, grid resilience, and energy affordability for 2026–2030.',
+    status: 'Closed',
+    openingDate: '2026-05-01',
+    closingDate: '2026-07-31',
     externalUrl: 'https://forum.gov.bm/en/',
   },
   {

@@ -36,9 +36,14 @@ export async function fetchMockById(collection, id, idKey = 'id') {
  * Also falls back to mock when the API returns an empty array (CMS not yet populated).
  * This means mock data acts as seed content until CMS editors upload real data.
  */
+export function toRelativeUrl(url) {
+  if (!url) return null
+  if (!url.startsWith('http')) return url
+  try { return new URL(url).pathname } catch { return url }
+}
+
 export async function fetchFromAPI(path, fallback) {
-  const base = import.meta.env.VITE_API_URL
-  if (!base) return fetchMock(fallback)
+  const base = import.meta.env.VITE_API_URL ?? ''
   try {
     const res = await fetch(`${base}${path}`, { credentials: 'include' })
     if (!res.ok) return fetchMock(fallback)

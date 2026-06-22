@@ -1,5 +1,5 @@
 import { projects } from '../data/projects'
-import { fetchFromAPI } from './api'
+import { fetchFromAPI, toRelativeUrl } from './api'
 
 export const projectService = {
   getAll: async () => {
@@ -15,10 +15,10 @@ export const projectService = {
       expectedCompletion: p.expectedCompletion || p.timeline,
       progress: p.progress ?? 0,
       budget: p.budget,
-      image: p.image,
+      image: toRelativeUrl(p.image),
       milestones: p.milestones,
-      documents: p.documents,
-      gallery: p.gallery,
+      documents: Array.isArray(p.documents) ? p.documents.map(d => typeof d === 'string' ? toRelativeUrl(d) : { ...d, url: toRelativeUrl(d.url) }) : p.documents,
+      gallery: Array.isArray(p.gallery) ? p.gallery.map(toRelativeUrl) : p.gallery,
     }))
   },
   getById: async (id) => {

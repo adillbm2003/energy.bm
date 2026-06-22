@@ -5,6 +5,12 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig(({ mode }) => ({
   base: mode === 'gh-pages' ? '/BERMUDS/' : '/',
   plugins: [react(), tailwindcss()],
+  server: {
+    proxy: {
+      '/api': 'http://localhost:8000',
+      '/uploads': 'http://localhost:8000',
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',

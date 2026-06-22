@@ -806,15 +806,36 @@ app.get('/api/solar/installations', (req, res) => {
       'Paget': [32.2752, -64.7743],
       'Warwick': [32.2648, -64.7930],
       'Pembroke': [32.3009, -64.7779],
-      'Smiths': [32.3104, -64.7349],
+      "Smith's": [32.3104, -64.7349],
       'Southampton': [32.2580, -64.8233],
       'Devonshire': [32.3124, -64.7580],
       'Sandys': [32.2783, -64.8794],
       'Hamilton': [32.3274, -64.7276],
-      'St. George': [32.3830, -64.6797],
+      "St. George's": [32.3830, -64.6797],
       'City of Hamilton': [32.2942, -64.7839],
       'Town of St. George': [32.3787, -64.6755],
       'Bermuda': [32.3078, -64.7505],
+    };
+
+    // The 9 official Bermuda parishes used for nearest-centroid lookup
+    const OFFICIAL_PARISHES = [
+      ['Devonshire', [32.3124, -64.7580]],
+      ['Hamilton', [32.3274, -64.7276]],
+      ['Paget', [32.2752, -64.7743]],
+      ['Pembroke', [32.3009, -64.7779]],
+      ['Sandys', [32.2783, -64.8794]],
+      ["Smith's", [32.3104, -64.7349]],
+      ['Southampton', [32.2580, -64.8233]],
+      ["St. George's", [32.3830, -64.6797]],
+      ['Warwick', [32.2648, -64.7930]],
+    ];
+    const nearestParish = (lat, lng) => {
+      let best = OFFICIAL_PARISHES[0][0], bestDist = Infinity;
+      for (const [name, [plat, plng]] of OFFICIAL_PARISHES) {
+        const d = (lat - plat) ** 2 + (lng - plng) ** 2;
+        if (d < bestDist) { bestDist = d; best = name; }
+      }
+      return best;
     };
 
     const ACTIVE_STATUSES = new Set(['Complete', 'Issued', 'Under Construction']);
@@ -853,6 +874,7 @@ app.get('/api/solar/installations', (req, res) => {
         lat = coords[0] + Math.sin(index * 7.3) * 0.003;
         lng = coords[1] + Math.cos(index * 5.1) * 0.003;
       }
+      // Note: normParish is computed after capacity block below — coords use raw parish for centroid lookup
 
       // ── Capacity: dedicated column wins over description regex ────────────
       const rawCap = row['Extracted AC Capacity'] ?? row['AC Capacity'] ??
@@ -866,6 +888,21 @@ app.get('/api/solar/installations', (req, res) => {
         const kwMatch = desc.match(/(\d+\.?\d*)\s*kw/i);
         capacity = kwMatch ? parseFloat(kwMatch[1]) : 0;
       }
+      // Entries > 1000 kW at individual addresses are data-entry errors (Wp entered as kW).
+      // Dividing by 1000 corrects them to realistic residential/small-commercial sizes
+      // and brings the island-wide total in line with the department's 15.6 MW figure.
+      if (capacity > 1000) capacity = capacity / 1000;
+
+      // ── Normalise parish names to Bermuda's 9 official parishes ──────────
+      const PARISH_MAP = {
+        'Town of St. George': "St. George's",
+        'St. George': "St. George's",
+        'City of Hamilton': 'Hamilton',
+        'Smiths': "Smith's",
+      };
+      // "Bermuda" = no parish assigned; use nearest centroid if coordinates available
+      let normParish = PARISH_MAP[parish] ?? parish;
+      if (normParish === 'Bermuda') normParish = nearestParish(lat, lng);
 
       const wc = (row['Permit Work Class'] || '').trim().toLowerCase();
       const type = wc.includes('commercial') ? 'Commercial' : 'Residential';
@@ -879,7 +916,7 @@ app.get('/api/solar/installations', (req, res) => {
       installations.push({
         id: permitNo ? String(permitNo) : `solar-${index}`,
         name: firstLine || `Permit ${index + 1}`,
-        parish,
+        parish: normParish,
         capacity,
         type,
         status: status || 'Unknown',
@@ -1865,10 +1902,9 @@ async function runMigrationsInline() {
     const leadershipCheck = await client.query("SELECT COUNT(*) FROM leadership");
     if (parseInt(leadershipCheck.rows[0].count, 10) === 0) {
       const team = [
-        ['lead-001','The Honourable Minister','Minister of Energy','/images/portrait.jpg','',1],
-        ['lead-002','Permanent Secretary for Energy','Permanent Secretary','/images/portrait.jpg','',2],
-        ['lead-003','Director of Energy Policy','Director of Energy Policy','/images/portrait.jpg','',3],
-        ['lead-004','Director of Renewable Energy','Director of Renewable Energy','/images/portrait.jpg','',4],
+        ['lead-001','The Honourable Alexa Lightbourne','Minister of Home Affairs','/images/portraits/minister-lightbourne.jpg',"The Honourable Alexa Lightbourne is the Minister of Home Affairs, responsible for the Department of Energy and Bermuda's national energy transition.",1],
+        ['lead-002','Valerie Robinson James','Permanent Secretary, Ministry of Home Affairs','/images/portraits/ps-robinson-james.jpg',"Valerie Robinson James is the Permanent Secretary for the Ministry of Home Affairs, responsible for the Department of Energy.",2],
+        ['lead-003','Adrian Dill','Director of the Department of Energy','/images/portraits/director-dill.jpg',"Adrian Dill is the Director of the Department of Energy, leading Bermuda's energy policy, renewable programmes, and regulatory oversight.",3],
       ];
       for (const [id, name, role, imageUrl, bio, displayOrder] of team) {
         await client.query(
@@ -1901,13 +1937,13 @@ async function runMigrationsInline() {
         );
       }
     }
-    // Seed NESP 2026 consultation and close any fuels-policy consultations
+    // Seed NESP 2026 as a closed (past) consultation; remove any fuels-related consultations
     await client.query(`
       INSERT INTO consultations (id, title, description, start_date, end_date, status, external_url)
       VALUES ('con-nesp-2026', 'National Energy Security Policy (NESP) 2026',
         'Public consultation on Bermuda''s updated National Energy Security Policy, covering renewable energy targets, grid resilience, and energy affordability for 2026–2030.',
-        '2026-05-01', '2026-07-31', 'Open', 'https://forum.gov.bm/en/')
-      ON CONFLICT DO NOTHING
+        '2026-05-01', '2026-07-31', 'Closed', 'https://forum.gov.bm/en/')
+      ON CONFLICT (id) DO UPDATE SET status = 'Closed'
     `);
     await client.query(`DELETE FROM consultations WHERE title ILIKE '%fuel%'`);
     // Seed default admin user if not exists

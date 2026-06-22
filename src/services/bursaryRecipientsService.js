@@ -1,4 +1,4 @@
-import { fetchFromAPI } from './api'
+import { fetchFromAPI, toRelativeUrl } from './api'
 
 const STATIC_RECIPIENTS = [
   {
@@ -36,7 +36,7 @@ export const bursaryRecipientsService = {
         school: r.school || r.fieldOfStudy,
         fieldOfStudy: r.fieldOfStudy || r.field_of_study,
         academicYear: r.academicYear || r.academic_year,
-        photoUrl: r.photoUrl || r.photo_url || '/images/portrait.jpg',
+        photoUrl: toRelativeUrl(r.photoUrl || r.photo_url) || '/images/portrait.jpg',
         achievement: r.achievement || r.bio || '',
         focus: r.focus || '',
         status: r.status,

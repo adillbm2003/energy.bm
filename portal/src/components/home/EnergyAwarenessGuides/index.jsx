@@ -5,7 +5,6 @@ import Button from '../../ui/Button'
 import { CardSkeleton } from '../../ui/Skeleton'
 import { energyAwarenessGuides } from '../../../data/energyGuides'
 import { getGuideKeyGuidance } from '../../../utils/homeStats'
-import { downloadMockDocument } from '../../../utils/mockDownload'
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -63,20 +62,22 @@ export default function EnergyAwarenessGuides({ stats, loading = false }) {
                       <p className="mt-4 flex-1 text-body-small text-slate-600">{guide.description}</p>
 
                       <div className="mt-5 space-y-3">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="w-full uppercase tracking-wide"
-                          onClick={() =>
-                            downloadMockDocument({
-                              title: guide.downloadTitle,
-                              summary: guide.description,
-                              category: 'Energy Guide',
-                            })
-                          }
-                        >
-                          Download PDF Guide
-                        </Button>
+                        {guide.pdfUrl ? (
+                          <a
+                            href={guide.pdfUrl}
+                            download
+                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2E5496] px-3.5 py-1.5 text-sm font-medium text-white uppercase tracking-wide transition-colors hover:bg-[#244475]"
+                          >
+                            Download PDF Guide
+                          </a>
+                        ) : (
+                          <Link
+                            to={guide.learnMoreTo}
+                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#2E5496] px-3.5 py-1.5 text-sm font-medium text-white uppercase tracking-wide transition-colors hover:bg-[#244475]"
+                          >
+                            View Guide
+                          </Link>
+                        )}
                         <Link
                           to={guide.learnMoreTo}
                           className="block text-center text-body-small font-semibold text-teal-700 transition-colors hover:text-teal-800"

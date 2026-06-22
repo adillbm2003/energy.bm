@@ -23,7 +23,6 @@ const Registry = lazy(() => import('../pages/Registry'))
 const GIS = lazy(() => import('../pages/GIS'))
 const Education = lazy(() => import('../pages/Education'))
 const Bursary = lazy(() => import('../pages/Bursary'))
-const Simulator = lazy(() => import('../pages/Simulator'))
 const Innovation = lazy(() => import('../pages/Innovation'))
 const News = lazy(() => import('../pages/News'))
 const NewsArticle = lazy(() => import('../pages/News/NewsArticle'))
@@ -53,7 +52,7 @@ export default function AppRoutes() {
           <Route path="projects" element={<Projects />} />
           <Route path="projects/:id" element={<ProjectDetail />} />
           <Route path="dashboard" element={<Dashboard />}>
-            <Route index element={<Navigate to={ROUTES.renewableDashboard} replace />} />
+            <Route index element={<Navigate to="renewable" replace />} />
             <Route path="renewable" element={<RenewableDashboard />} />
             <Route path="transition" element={<TransitionDashboard />} />
           </Route>
@@ -61,7 +60,6 @@ export default function AppRoutes() {
           <Route path="gis" element={<GIS />} />
           <Route path="education" element={<Education />} />
           <Route path="bursary" element={<Bursary />} />
-          <Route path="simulator" element={<Simulator />} />
           <Route path="innovation" element={<Innovation />} />
           <Route path="news" element={<News />} />
           <Route path="news/:slug" element={<NewsArticle />} />

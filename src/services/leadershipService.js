@@ -1,4 +1,4 @@
-import { fetchFromAPI } from './api'
+import { fetchFromAPI, toRelativeUrl } from './api'
 
 const STATIC_TEAM = [
   { id: 'lead-001', name: 'The Honourable Minister', role: 'Minister of Energy', imageUrl: '/images/portrait.jpg', bio: '', displayOrder: 1 },
@@ -16,7 +16,7 @@ export const leadershipService = {
         id: m.id,
         name: m.name,
         role: m.role,
-        imageUrl: m.imageUrl || m.image_url || '/images/portrait.jpg',
+        imageUrl: toRelativeUrl(m.imageUrl || m.image_url) || '/images/portrait.jpg',
         bio: m.bio || '',
         displayOrder: m.displayOrder || m.display_order || 0,
       }))

@@ -1,5 +1,5 @@
 import { bursaryProgramme, bursaryFAQs, bursaryDocuments, bursaryRecipients } from '../data/bursary'
-import { fetchFromAPI, fetchMock } from './api'
+import { fetchFromAPI, fetchMock, toRelativeUrl } from './api'
 
 export const bursaryService = {
   getProgramme: () => fetchMock(bursaryProgramme),
@@ -15,8 +15,8 @@ export const bursaryService = {
       academicYear: b.academicYear || b.academic_year,
       status: b.status || 'Active',
       amount: b.amount,
-      photoUrl: b.photoUrl || b.photo_url,
-      guidelinesUrl: b.guidelinesUrl || b.guidelines_url,
+      photoUrl: toRelativeUrl(b.photoUrl || b.photo_url),
+      guidelinesUrl: toRelativeUrl(b.guidelinesUrl || b.guidelines_url),
       bio: b.bio,
     }))
   },

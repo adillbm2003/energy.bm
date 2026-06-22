@@ -1,5 +1,5 @@
 import { news } from '../data/news'
-import { fetchFromAPI, fetchMockById } from './api'
+import { fetchFromAPI, fetchMockById, toRelativeUrl } from './api'
 import { sortByNewest } from '../utils/sortContent'
 
 export const newsService = {
@@ -15,9 +15,9 @@ export const newsService = {
       author: n.author || 'Department of Energy',
       publishedAt: n.publishedAt || n.publish_date,
       publishDate: n.publishDate || n.publishedAt || n.publish_date,
-      image: n.image,
+      image: toRelativeUrl(n.image),
       content: Array.isArray(n.content) ? n.content : (n.content ? n.content.split('\n\n') : []),
-      attachmentUrl: n.attachmentUrl || n.attachment_url || null,
+      attachmentUrl: toRelativeUrl(n.attachmentUrl || n.attachment_url),
       attachmentName: n.attachmentName || n.attachment_name || null,
     })), ['publishDate'])
   },

@@ -1,27 +1,27 @@
 import { PAGE_IMAGES } from '../constants/branding'
 
 export const homeStats = [
-  { label: 'Installed Solar Capacity', value: '25.4', unit: 'MW', change: '+18%', trend: 'up' },
-  { label: 'Renewable Penetration', value: '12.8', unit: '%', change: '+2.1%', trend: 'up' },
-  { label: 'Registered EVs', value: '1,847', unit: '', change: '+34%', trend: 'up' },
-  { label: 'Active Consultations', value: '2', unit: '', change: '', trend: 'neutral' },
+  { label: 'Installed Solar Capacity', value: '15.6', unit: 'MW', change: '+9%', trend: 'up' },
+  { label: 'Renewable Penetration', value: '8.4', unit: '%', change: '+1.2%', trend: 'up' },
+  { label: 'Registered EVs', value: '842', unit: '', change: '+28%', trend: 'up' },
+  { label: 'Solar Installations', value: '720', unit: '', change: '+12%', trend: 'up' },
 ]
 
 export const renewableKPIs = [
-  { label: 'Installed Capacity', value: 25.4, unit: 'MW', change: 18.2, image: PAGE_IMAGES.solar },
-  { label: 'Solar Growth (YoY)', value: 22.5, unit: '%', change: 4.3, image: PAGE_IMAGES.solar },
+  { label: 'Installed Capacity', value: 15.6, unit: 'MW', change: 9.0, image: PAGE_IMAGES.solar },
+  { label: 'Solar Installations', value: 720, unit: 'Systems', change: 12.0, image: PAGE_IMAGES.solarRooftop },
   { label: 'Battery Storage', value: 3.2, unit: 'MWh', change: 45.0, image: PAGE_IMAGES.battery },
-  { label: 'Renewable Penetration', value: 12.8, unit: '%', change: 2.1, image: PAGE_IMAGES.wind },
+  { label: 'Renewable Penetration', value: 8.4, unit: '%', change: 1.2, image: PAGE_IMAGES.wind },
 ]
 
 export const solarGrowthData = [
-  { year: '2020', capacity: 8.2, installations: 420 },
-  { year: '2021', capacity: 11.5, installations: 580 },
-  { year: '2022', capacity: 14.8, installations: 720 },
-  { year: '2023', capacity: 18.2, installations: 890 },
-  { year: '2024', capacity: 21.6, installations: 1050 },
-  { year: '2025', capacity: 24.1, installations: 1180 },
-  { year: '2026', capacity: 25.4, installations: 1245 },
+  { year: '2020', capacity: 6.1, installations: 310 },
+  { year: '2021', capacity: 7.8, installations: 390 },
+  { year: '2022', capacity: 9.4, installations: 470 },
+  { year: '2023', capacity: 11.2, installations: 560 },
+  { year: '2024', capacity: 13.1, installations: 640 },
+  { year: '2025', capacity: 14.3, installations: 680 },
+  { year: '2026', capacity: 15.6, installations: 720 },
 ]
 
 export const capacityByType = [
@@ -50,27 +50,27 @@ export const penetrationData = [
 ]
 
 export const transitionKPIs = [
-  { label: 'Registered EVs', value: 1847, unit: '', change: 34.2, image: PAGE_IMAGES.ev },
+  { label: 'Registered EVs', value: 842, unit: '', change: 28.0, image: PAGE_IMAGES.ev },
   { label: 'Public Chargers', value: 48, unit: '', change: 26.3, image: PAGE_IMAGES.charging },
-  { label: 'EV Market Share', value: 8.2, unit: '%', change: 2.8, image: PAGE_IMAGES.analytics },
-  { label: 'Fleet Electrification', value: 22, unit: '%', change: 8.5, image: PAGE_IMAGES.transport },
+  { label: 'EV Market Share', value: 4.1, unit: '%', change: 1.2, image: PAGE_IMAGES.analytics },
+  { label: 'Fleet Electrification', value: 18, unit: '%', change: 6.0, image: PAGE_IMAGES.transport },
 ]
 
 export const evAdoptionData = [
-  { year: '2020', evs: 320, hybrids: 890 },
-  { year: '2021', evs: 480, hybrids: 1020 },
-  { year: '2022', evs: 680, hybrids: 1150 },
-  { year: '2023', evs: 920, hybrids: 1280 },
-  { year: '2024', evs: 1280, hybrids: 1420 },
-  { year: '2025', evs: 1580, hybrids: 1550 },
-  { year: '2026', evs: 1847, hybrids: 1680 },
+  { year: '2020', evs: 140, hybrids: 420 },
+  { year: '2021', evs: 210, hybrids: 510 },
+  { year: '2022', evs: 320, hybrids: 590 },
+  { year: '2023', evs: 470, hybrids: 650 },
+  { year: '2024', evs: 620, hybrids: 710 },
+  { year: '2025', evs: 740, hybrids: 760 },
+  { year: '2026', evs: 842, hybrids: 800 },
 ]
 
 export const evByCategory = [
-  { category: 'Passenger Cars', count: 1420, percent: 77, image: PAGE_IMAGES.ev },
-  { category: 'Commercial Vans', count: 285, percent: 15, image: PAGE_IMAGES.van },
-  { category: 'Motorcycles', count: 92, percent: 5, image: PAGE_IMAGES.motorcycle },
-  { category: 'Buses & Fleet', count: 50, percent: 3, image: PAGE_IMAGES.bus },
+  { category: 'Passenger Cars', count: 648, percent: 77, image: PAGE_IMAGES.ev },
+  { category: 'Commercial Vans', count: 126, percent: 15, image: PAGE_IMAGES.van },
+  { category: 'Motorcycles', count: 42, percent: 5, image: PAGE_IMAGES.motorcycle },
+  { category: 'Buses & Fleet', count: 26, percent: 3, image: PAGE_IMAGES.bus },
 ]
 
 export const chargingInfrastructure = [

@@ -1388,8 +1388,9 @@ header{border-radius:16px}
     <h2>Power Source <span class="tag" id="solarModeTag">Power Only</span></h2>
     <p class="sub">Choose how the home is powered</p>
     <div class="solar-controls">
-      <div class="mode-options" id="powerMode">
+      <div class="mode-options" id="powerMode" style="grid-template-columns:repeat(3,1fr)">
         <button type="button" data-mode="grid" class="on">⚡ Power</button>
+        <button type="button" data-mode="solar">☀️ Solar Only</button>
         <button type="button" data-mode="solarbattery">☀️🔋 Solar &amp; Battery</button>
       </div>
       <div id="solarSizeWrap" class="solar-controls disabled" style="margin-top:0">
@@ -1559,7 +1560,7 @@ function bill(m){const e=energyCharge(m),f=m*RATES.far,fac=facilitiesCharge(m),r
   // BASE BILL FIX END
   return{energy:e,far:f,facilities:fac,ra,base,total:total};}
 // SOLAR FEATURE START
-// POWER MODE (2 options): 'grid' = power only, 'solarbattery' = solar PV + battery storage
+// POWER MODE (3 options): 'grid' = power only, 'solar' = solar PV only (no battery), 'solarbattery' = solar PV + battery
 let MODE='grid';
 const SOLAR={selected:'5',customSize:5,sunlightHours:5.5};
 const isNightMode=()=>document.getElementById('houseSvg')?.classList.contains('night');
@@ -1572,9 +1573,9 @@ function dayNightUsage(){let day=0,night=0;apps.forEach(a=>{const k=kwhDay(a);if
 // so the FULL daily generation offsets the FULL daily usage.
 // Any remainder is drawn from the grid and billed (with the $25 base bill floor).
 const netDailyUsage=(grossDaily=totalDaily())=>MODE==='grid'?grossDaily:Math.max(0,grossDaily-solarDailyGeneration());
-// kWh/day the battery shifts from daytime generation into night-time loads
+// kWh/day the battery shifts surplus daytime solar into night-time loads (solarbattery only)
 function batteryShifted(){
-  if(MODE==='grid')return 0;
+  if(MODE!=='solarbattery')return 0;
   const{day,night}=dayNightUsage();
   const surplus=Math.max(0,solarDailyGeneration()-day);
   return Math.min(surplus,night);
@@ -1587,7 +1588,7 @@ function renderSolar(){
   document.querySelectorAll('#powerMode button').forEach(b=>b.classList.toggle('on',b.dataset.mode===MODE));
   const sizeWrap=document.getElementById('solarSizeWrap');if(sizeWrap)sizeWrap.classList.toggle('disabled',MODE==='grid');
   const modeTag=document.getElementById('solarModeTag');
-  if(modeTag)modeTag.textContent=MODE==='grid'?'⚡ Power Only':'☀️🔋 Solar & Battery';
+  if(modeTag)modeTag.textContent=MODE==='grid'?'⚡ Power Only':MODE==='solar'?'☀️ Solar Only':'☀️🔋 Solar & Battery';
   const prodTag=document.getElementById('solarProductionTag');if(prodTag)prodTag.textContent=daily.toFixed(1)+' kWh/day';
   const roofText=document.getElementById('solarRoofText');if(roofText)roofText.textContent=MODE==='grid'?'Solar OFF':'Solar '+daily.toFixed(1)+' kWh/day';
   const roof=document.getElementById('solarRoof');if(roof)roof.style.opacity=MODE==='grid'?.25:1;
@@ -1595,9 +1596,10 @@ function renderSolar(){
   // Shortfall: solar + battery can't cover the whole load → remainder comes from grid
   const short=document.getElementById('solarShortfall');
   if(short){
-    if(MODE==='solarbattery'&&gross>daily){
+    if(MODE!=='grid'&&gross>daily){
       short.style.display='block';
-      short.textContent='⚠ Solar & battery cover '+daily.toFixed(1)+' of '+gross.toFixed(1)+' kWh/day — the remaining '+(gross-daily).toFixed(1)+' kWh/day is drawn from the grid and billed.';
+      const label=MODE==='solar'?'Solar panels cover':'Solar & battery cover';
+      short.textContent='⚠ '+label+' '+daily.toFixed(1)+' of '+gross.toFixed(1)+' kWh/day — the remaining '+(gross-daily).toFixed(1)+' kWh/day is drawn from the grid and billed.';
     }else short.style.display='none';
   }
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
@@ -1969,14 +1971,7 @@ function openReport(){
     <h3>Where the energy goes</h3>
     <table>${ranked.map(a=>`<tr><td>${a.name}</td><td>${(kwhDay(a)*30).toFixed(1)} kWh/mo</td></tr>`).join('')}</table>
     <h3>If you trimmed 20%</h3>
-    <p style="font-size:11.5px;color:var(--muted)">Bill drops to <b style="color:var(--neon)">${money(b20.total)}</b> — saving <b style="color:var(--neon)">${money(b.total-b20.total)}</b>/month, ${money((b.total-b20.total)*12)}/year.</p>
-    <h3>Top recommendations</h3>
-    <ul>
-      <li>Water heater on a timer, thermostat down to 49°C (120°F).</li>
-      <li>Raise AC setpoints a degree or two and use sleep timers overnight.</li>
-      <li>Air-dry laundry; run pool pump only 4–6 hrs/day.</li>
-      <li>Rooftop solar could offset a large share of this daytime load.</li>
-    </ul>`;
+    <p style="font-size:11.5px;color:var(--muted)">Bill drops to <b style="color:var(--neon)">${money(b20.total)}</b> — saving <b style="color:var(--neon)">${money(b.total-b20.total)}</b>/month, ${money((b.total-b20.total)*12)}/year.</p>`;
   document.getElementById('modal').classList.add('show');
 }
 function exportCSV(){
@@ -2121,18 +2116,6 @@ document.getElementById('pdfBtn').onclick=()=>{
   const saveLine='Bill drops to '+money(b20.total)+' — saving '+money(b.total-b20.total)+'/month, '+money((b.total-b20.total)*12)+'/year.';
   doc.text(doc.splitTextToSize(saveLine,PW-M*2),M,y);y+=14;
 
-  /* ── Recommendations ── */
-  chk(14);sec('TOP RECOMMENDATIONS');
-  ['Water heater on a timer, thermostat down to 49°C (120°F).',
-   'Raise AC setpoints a degree or two and use sleep timers overnight.',
-   'Air-dry laundry; run pool pump only 4–6 hrs/day.',
-   'Rooftop solar could offset a large share of this daytime load.'
-  ].forEach(r=>{
-    chk(8);
-    doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(30,41,59);
-    const lines=doc.splitTextToSize('•  '+r,PW-M*2-4);
-    doc.text(lines,M+2,y);y+=lines.length*6+1;
-  });
 
   /* ── Footer on every page ── */
   const np=doc.internal.getNumberOfPages();

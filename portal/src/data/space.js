@@ -5,7 +5,7 @@ export const spacePages = {
   'bermuda-global-space-economy': {
     title: 'Bermuda and the Global Space Economy',
     subtitle: 'Gateway to the global space economy',
-    image: PAGE_IMAGES.space,
+    image: PAGE_IMAGES.spaceOrbit,
     content: [
       'Bermuda has established itself as a leading international centre for space and satellite communications, leveraging its strategic mid-Atlantic location, robust regulatory framework, and deep expertise in telecommunications.',
       'This page introduces Bermuda as a gateway to the global space economy and explains why the island is well positioned for space and satellite sector development.',
@@ -25,7 +25,7 @@ export const spacePages = {
   'earth-stations-operations': {
     title: 'Earth Stations and Satellite Operations',
     subtitle: 'World-class ground segment infrastructure',
-    image: PAGE_IMAGES.space,
+    image: PAGE_IMAGES.spaceDish,
     content: [
       'Bermuda hosts earth station facilities providing telemetry, tracking, and control services for satellite operators worldwide.',
       'Opportunities exist for establishing earth stations supporting satellite communications, launch monitoring, oceanic tracking, maritime and aviation services.',
@@ -35,7 +35,7 @@ export const spacePages = {
   'satellite-filing-guidance': {
     title: 'Satellite Filing and Regulatory Guidance',
     subtitle: 'Efficient, transparent ITU filing process',
-    image: PAGE_IMAGES.space,
+    image: PAGE_IMAGES.spaceNightsky,
     content: [
       'Bermuda administers satellite filing obligations with the International Telecommunication Union (ITU), providing coordination services for operators registering satellite networks.',
       'The process is designed to be efficient, transparent and compliant with applicable international requirements, including administrative fees and coordination with relevant regulatory bodies.',
@@ -45,7 +45,7 @@ export const spacePages = {
   'space-insurance': {
     title: 'Space Insurance',
     subtitle: 'World-leading insurance and reinsurance jurisdiction',
-    image: PAGE_IMAGES.government,
+    image: PAGE_IMAGES.spaceInsurance,
     content: [
       'Bermuda is recognised as the world\'s leading market for space insurance, with decades of experience underwriting launch, in-orbit, and third-party liability risks.',
       'Opportunities exist for space-related insurance products covering satellites, launches, space assets, and related risks.',
@@ -55,7 +55,7 @@ export const spacePages = {
   'national-space-strategy': {
     title: 'National Space Strategy and Consultation Documents',
     subtitle: 'Policy framework and public consultation materials',
-    image: PAGE_IMAGES.consultation,
+    image: PAGE_IMAGES.spaceStrategy,
     content: [
       'Access Bermuda\'s National Space Strategy 2020–2025, space and satellite consultation documents, related policy papers, and public notices.',
       'The Space & Satellite consultation document is also available through the Government consultations forum.',
@@ -66,23 +66,12 @@ export const spacePages = {
       { title: 'Space & Satellite Consultation', url: EXTERNAL_LINKS.consultationsForum, size: 'External' },
     ],
   },
-  'stem-workforce': {
-    title: 'Space Camps, STEM Education and Workforce Pathways',
-    subtitle: 'Building Bermuda\'s space workforce',
-    image: PAGE_IMAGES.education,
-    content: [
-      'The Department supports space camps, STEM education, student programmes, workshops, small satellite programmes, and microgravity experiments.',
-      'Detailed student and public education resources are available in the Education Centre to avoid duplication across sections.',
-    ],
-    highlights: ['Space camps', 'STEM programmes', 'Small satellite projects', 'Career pathways'],
-    crossLinks: [{ label: 'Education Centre', to: '/education' }],
-  },
   'sector-enquiries': {
     title: 'Contact and Sector Enquiries',
     subtitle: 'Connect with the Space & Satellite team',
-    image: PAGE_IMAGES.contact,
+    image: PAGE_IMAGES.spaceAstronaut,
     content: [
-      'For inquiries related to satellite filing, earth station licensing, space insurance, investment opportunities, or STEM programmes, contact the Space & Satellite Division.',
+      'For inquiries related to satellite filing, earth station licensing, space insurance, or investment opportunities, contact the Space & Satellite Division.',
     ],
     contact: {
       email: 'space@gov.bm',

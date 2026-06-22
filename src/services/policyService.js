@@ -1,5 +1,5 @@
 import { policies, policyTracker } from '../data/policies'
-import { fetchFromAPI } from './api'
+import { fetchFromAPI, toRelativeUrl } from './api'
 import { sortByNewest } from '../utils/sortContent'
 
 export const policyService = {
@@ -12,10 +12,10 @@ export const policyService = {
       summary: p.summary || p.description,
       publishedAt: p.publishedAt || p.effectiveDate || p.publishDate,
       status: p.status,
-      downloadUrl: p.downloadUrl || p.pdfLink,
+      downloadUrl: toRelativeUrl(p.downloadUrl || p.pdfLink),
       fileSize: p.fileSize,
       tags: p.tags,
-      image: p.image,
+      image: toRelativeUrl(p.image),
     })), ['publishedAt'])
   },
   getTracker: async () => {

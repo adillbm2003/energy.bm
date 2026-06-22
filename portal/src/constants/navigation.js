@@ -29,7 +29,7 @@ export const MAIN_NAV = [
       { label: 'Energy Transition Dashboard', to: ROUTES.transitionDashboard },
       { label: 'Renewable Energy Registry', to: ROUTES.registry },
       { label: 'GIS Heat Map', to: ROUTES.gis },
-      { label: 'Energy Simulator', to: ROUTES.simulator },
+      { label: 'Energy Simulator', href: 'https://simulator.energy.bm/' },
     ],
   },
   {
